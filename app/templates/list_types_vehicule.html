@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des Types de Véhicules - TMS{% endblock %}
+
+{% block content %}
+    <h1>Liste des Types de Véhicules</h1>
+
+    <p><a href="{{ url_for('main.add_type_vehicule') }}" class="action-link">Ajouter un nouveau Type de Véhicule</a></p>
+
+    {% if types %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom du Type</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for type_v in types %}
+                <tr>
+                    <td>{{ type_v.id_type_vehicule }}</td>
+                    <td>{{ type_v.nom_type }}</td>
+                    <td>
+                        <a href="{{ url_for('main.edit_type_vehicule', type_id=type_v.id_type_vehicule) }}" class="action-link" style="background-color: #ffc107; border-color: #ffc107; color: #212529;">Modifier</a>
+                        <a href="{{ url_for('main.delete_type_vehicule', type_id=type_v.id_type_vehicule) }}" 
+                           class="action-link delete-link" 
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce type de véhicule ?');">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucun type de véhicule enregistré pour le moment.</p>
+    {% endif %}
+{% endblock %}

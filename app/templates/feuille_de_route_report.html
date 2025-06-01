@@ -1,0 +1,181 @@
+{# app/templates/feuille_de_route_report.html #}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapport Feuille de Route {{ fdr.id_feuille_de_route }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fff;
+        }
+        .header, .footer {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            color: #2c3e50;
+        }
+        .section {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            color: #34495e;
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .info-grid p {
+            margin: 0;
+        }
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            font-size: 0.9em; /* Plus petit pour les tableaux détaillés */
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        ul li {
+            margin-bottom: 5px;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 30px;
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        /* Styles spécifiques à l'impression */
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+            }
+            .header, .footer {
+                padding: 10px 0;
+                border-bottom: 1px solid #ccc;
+            }
+            .back-link {
+                display: none;
+            }
+            .section {
+                border: none;
+                box-shadow: none;
+                page-break-inside: avoid;
+            }
+            .info-grid {
+                display: block;
+            }
+            .info-grid p {
+                padding-bottom: 5px;
+            }
+            table, th, td {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Feuille de Route</h1>
+        <p><strong>ID Feuille de Route: {{ fdr.id_feuille_de_route }}</strong></p>
+        <p><strong>Description:</strong> {{ fdr.description if fdr.description else 'N/A' }}</p>
+    </div>
+
+    <div class="section">
+        <h2>Informations Générales</h2>
+        <div class="info-grid">
+            <p><strong>Chauffeur:</strong> {{ fdr.chauffeur.nom_complet if fdr.chauffeur else 'N/A' }}</p>
+            <p><strong>Véhicule:</strong> {{ fdr.vehicule.immatriculation_ve if fdr.vehicule else 'N/A' }} ({{ fdr.vehicule.categorie if fdr.vehicule else 'N/A' }})</p>
+            <p><strong>Départ Prévu:</strong> {{ fdr.date_depart_prevu.strftime('%d/%m/%Y') }} {{ fdr.heure_depart_prevu.strftime('%H:%M') }}</p>
+            <p><strong>Arrivée Prévue:</strong> {{ fdr.date_arrivee_prevue.strftime('%d/%m/%Y') }} {{ fdr.heure_arrivee_prevue.strftime('%H:%M') }}</p>
+            <p><strong>Départ Réel:</strong> {{ (fdr.date_depart_reel.strftime('%d/%m/%Y') + ' ' + fdr.heure_depart_reel.strftime('%H:%M')) if fdr.date_depart_reel and fdr.heure_depart_reel else 'N/A' }}</p>
+            <p><strong>Arrivée Réelle:</strong> {{ (fdr.date_arrivee_reelle.strftime('%d/%m/%Y') + ' ' + fdr.heure_arrivee_reelle.strftime('%H:%M')) if fdr.date_arrivee_reelle and fdr.heure_arrivee_reelle else 'N/A' }}</p>
+            <p><strong>KM Début:</strong> {{ fdr.km_debut if fdr.km_debut is not none else 'N/A' }}</p>
+            <p><strong>KM Fin:</strong> {{ fdr.km_fin if fdr.km_fin is not none else 'N/A' }}</p>
+        </div>
+    </div>
+
+    {% if fdr.missions_affectees %}
+        <div class="section">
+            <h2>Missions Affectées à cette Feuille de Route</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID Mission</th>
+                        <th>Statut</th>
+                        <th>Période Mission</th>
+                        <th>Destination Principale</th>
+                        <th>Détails Commandes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mission in fdr.missions_affectees %}
+                    <tr>
+                        <td>{{ mission.id_mission }}</td>
+                        <td>{{ mission.statut }}</td>
+                        <td>{{ mission.date_debut.strftime('%d/%m') }} {{ mission.heure_debut.strftime('%H:%M') }} - {{ mission.date_fin.strftime('%d/%m') }} {{ mission.heure_fin.strftime('%H:%M') }}</td>
+                        <td>{{ mission.destination.description if mission.destination else 'N/A' }}</td>
+                        <td>
+                            {% if mission.details_commandes %}
+                                <ul>
+                                {% for detail in mission.details_commandes %}
+                                    <li>{{ detail.entete_commande.reference if detail.entete_commande else 'N/A' }} (Qty: {{ detail.quantite }}, Dest: {{ detail.destination.description if detail.destination else 'N/A' }})</li>
+                                {% endfor %}
+                                </ul>
+                            {% else %}
+                                Aucun
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="section">
+            <h2>Missions Affectées</h2>
+            <p>Aucune mission n'est affectée à cette feuille de route.</p>
+        </div>
+    {% endif %}
+
+    <div class="footer">
+        <p>Généré par le Système de Gestion des Transports le {{ now().strftime('%d/%m/%Y à %H:%M') }}</p>
+    </div>
+
+    <a href="{{ url_for('main.liste_feuilles_de_route') }}" class="back-link">Retour à la liste des Feuilles de Route</a>
+</body>
+</html>

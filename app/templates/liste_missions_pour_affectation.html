@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Affecter Détail à Mission - TMS{% endblock %}
+
+{% block content %}
+    <h1>Affecter le Détail de Commande à une Mission</h1>
+    <div style="margin-bottom: 20px; padding: 10px; background-color: #e9ecef; border-radius: 4px;">
+        <h4>Détail à affecter:</h4>
+        <p>
+            <strong>ID: {{ detail_to_assign.id_detail_commande }}</strong> | 
+            Référence: {{ detail_to_assign.entete_commande.reference if detail_to_assign.entete_commande else 'N/A' }} <br>
+            Quantité: {{ detail_to_assign.quantite }} | 
+            Destination: {{ detail_to_assign.destination.description if detail_to_assign.destination else 'N/A' }}
+        </p>
+    </div>
+
+    <h2>Sélectionnez la Mission à laquelle affecter ce détail:</h2>
+
+    {% if missions %}
+        <div style="overflow-x:auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID Mission</th>
+                    <th>Chauffeur</th>
+                    <th>Véhicule</th>
+                    <th>Feuille de Route</th>
+                    <th>Période</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for mission in missions %}
+                <tr>
+                    <td>{{ mission.id_mission }}</td>
+                    <td>{{ mission.chauffeur.nom_complet if mission.chauffeur else 'N/A' }}</td>
+                    <td>{{ mission.vehicule.immatriculation_ve if mission.vehicule else 'N/A' }}</td>
+                    <td>{{ (mission.feuille_de_route.description if mission.feuille_de_route and mission.feuille_de_route.description else 'ID: ' + mission.feuille_de_route.id_feuille_de_route|string) if mission.feuille_de_route else 'Non Affectée' }}</td>
+                    <td>{{ mission.date_debut.strftime('%d/%m/%y') }} {{ mission.heure_debut.strftime('%H:%M') }} - {{ mission.date_fin.strftime('%d/%m/%y') }} {{ mission.heure_fin.strftime('%H:%M') }}</td>
+                    <td>
+                        <form action="{{ url_for('main.add_detail_to_mission', mission_id=mission.id_mission) }}" method="POST" style="display:inline;">
+                            <input type="hidden" name="detail_id" value="{{ detail_to_assign.id_detail_commande }}">
+                            <button type="submit" class="action-link" onclick="return confirm('Voulez-vous affecter ce détail à la mission ID: {{ mission.id_mission }} ?');">Affecter</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    {% else %}
+        <p>Aucune mission disponible pour l'affectation. Veuillez d'abord <a href="{{ url_for('main.add_mission') }}" class="action-link">planifier une nouvelle mission</a>.</p>
+    {% endif %}
+
+    <p><a href="{{ url_for('main.liste_commandes_non_planifiees') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour aux commandes non planifiées</a></p>
+{% endblock %}

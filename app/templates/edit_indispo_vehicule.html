@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier Indisponibilité Véhicule - TMS{% endblock %}
+
+{% block content %}
+    <h1>Modifier Indisponibilité Véhicule pour: {{ indispo.vehicule.immatriculation_ve }}</h1>
+
+    {% if form_error %}
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.edit_indispo_vehicule', indispo_id=indispo.id_indispo_vehicule) }}">
+        <div>
+            <label for="id_vehicule">Véhicule (Obligatoire):</label>
+            <select id="id_vehicule" name="id_vehicule" required>
+                 <option value="">-- Sélectionnez un véhicule --</option>
+                {% for vehicule in vehicules %}
+                    <option value="{{ vehicule.id_vehicule }}"
+                            {% if vehicule.id_vehicule == indispo.id_vehicule %}selected{% endif %}>
+                        {{ vehicule.immatriculation_ve }} ({{ vehicule.categorie }})
+                    </option>
+                {% endfor %}
+            </select>
+            {% if not vehicules %}
+                 <p style="color: red;">Aucun véhicule disponible. Veuillez en <a href="{{ url_for('main.add_vehicule') }}">ajouter un</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <label for="id_type_indispo_vehicule">Type d'Indisponibilité (Obligatoire):</label>
+            <select id="id_type_indispo_vehicule" name="id_type_indispo_vehicule" required>
+                 <option value="">-- Sélectionnez un type --</option>
+                {% for type_indispo in types_indispo %}
+                    <option value="{{ type_indispo.id_type_indispo_vehicule }}"
+                            {% if type_indispo.id_type_indispo_vehicule == indispo.id_type_indispo_vehicule %}selected{% endif %}>
+                        {{ type_indispo.nom_type }}
+                    </option>
+                {% endfor %}
+            </select>
+            {% if not types_indispo %}
+                <p style="color: red;">Aucun type d'indisponibilité disponible. Veuillez en <a href="{{ url_for('main.add_type_indispo_vehicule') }}">ajouter un</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <label for="date_debut">Date de Début (Obligatoire):</label>
+            <input type="date" id="date_debut" name="date_debut" value="{{ indispo.date_debut.strftime('%Y-%m-%d') }}" required>
+        </div>
+        <div>
+            <label for="date_fin">Date de Fin (Obligatoire):</label>
+            <input type="date" id="date_fin" name="date_fin" value="{{ indispo.date_fin.strftime('%Y-%m-%d') }}" required>
+        </div>
+        <div>
+            <label for="description">Description (Optionnel):</label>
+            <input type="text" id="description" name="description" value="{{ indispo.description or '' }}">
+        </div>
+        <div>
+            <button type="submit">Enregistrer les modifications</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_indispo_vehicule') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à la liste</a></p>
+{% endblock %}

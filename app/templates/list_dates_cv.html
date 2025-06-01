@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Dates de Validation Chauffeur - TMS{% endblock %}
+
+{% block content %}
+    <h1>Dates de Validation Chauffeur</h1>
+
+    <p><a href="{{ url_for('main.add_date_cv') }}" class="action-link">Ajouter une Date de Validation Chauffeur</a></p>
+
+    {% if dates_cv %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Chauffeur</th>
+                    <th>Description</th>
+                    <th>Date Début</th>
+                    <th>Date Fin</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for date_c in dates_cv %}
+                <tr>
+                    <td>{{ date_c.id_date_cv }}</td>
+                    <td>{{ date_c.chauffeur.nom_complet if date_c.chauffeur else 'N/A' }}</td>
+                    <td>{{ date_c.description if date_c.description else 'N/A' }}</td>
+                    <td>{{ date_c.date_debut.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ date_c.date_fin.strftime('%d/%m/%Y') }}</td>
+                    <td>
+                        <a href="{{ url_for('main.edit_date_cv', date_id=date_c.id_date_cv) }}" class="action-link" style="background-color: #ffc107; border-color: #ffc107; color: #212529;">Modifier</a>
+                        <a href="{{ url_for('main.delete_date_cv', date_id=date_c.id_date_cv) }}" 
+                           class="action-link delete-link" 
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette date de validation ?');">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucune date de validation chauffeur enregistrée pour le moment.</p>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Ajouter Date Contrôle Véhicule - TMS{% endblock %}
+
+{% block content %}
+    <h1>Ajouter une Nouvelle Date de Contrôle Véhicule</h1>
+
+    {% if form_error %}
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.add_date_tr') }}">
+        <div>
+            <label for="id_vehicule">Véhicule (Obligatoire):</label>
+            <select id="id_vehicule" name="id_vehicule" required>
+                <option value="">-- Sélectionnez un véhicule --</option>
+                {% if vehicules %}
+                    {% for vehicule in vehicules %}
+                        <option value="{{ vehicule.id_vehicule }}" 
+                                {% if request.form.get('id_vehicule') and request.form.get('id_vehicule')|int == vehicule.id_vehicule %}selected{% endif %}>
+                            {{ vehicule.immatriculation_ve }} ({{ vehicule.categorie }})
+                        </option>
+                    {% endfor %}
+                {% else %}
+                     <option value="" disabled>Aucun véhicule disponible</option>
+                {% endif %}
+            </select>
+            {% if not vehicules %}
+                <p style="color: red;">Veuillez d'abord <a href="{{ url_for('main.add_vehicule') }}">ajouter un Véhicule</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <label for="description">Description (Ex: Contrôle Technique, Assurance):</label>
+            <input type="text" id="description" name="description" value="{{ request.form.get('description') or '' }}">
+        </div>
+        <div>
+            <label for="date_debut">Date de Début de Validité (Obligatoire):</label>
+            <input type="date" id="date_debut" name="date_debut" value="{{ request.form.get('date_debut') or '' }}" required>
+        </div>
+        <div>
+            <label for="date_fin">Date de Fin de Validité (Obligatoire):</label>
+            <input type="date" id="date_fin" name="date_fin" value="{{ request.form.get('date_fin') or '' }}" required>
+        </div>
+        <div>
+            <button type="submit" {% if not vehicules %}disabled{% endif %}>Ajouter Date de Contrôle</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_dates_tr') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à la liste</a></p>
+{% endblock %}

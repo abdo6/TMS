@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des Missions - TMS{% endblock %}
+
+{% block head_extra %}
+    <style>
+        .search-form {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap; 
+            align-items: flex-end; 
+            gap: 15px; 
+        }
+        .search-group {
+            display: flex;
+            flex-direction: column; 
+            gap: 5px;
+        }
+        .search-form input[type="text"],
+        .search-form input[type="date"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 180px; 
+        }
+        .details-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            font-size: 0.9em;
+        }
+        .details-list li {
+            background-color: #e9f5e9; 
+            border-left: 3px solid #4CAF50;
+            margin-bottom: 3px;
+            padding: 4px 8px;
+            border-radius: 3px;
+        }
+        /* Styles spécifiques pour les statuts de mission (répétés ici pour être sûr, mais devraient idéalement être dans style.css) */
+        .mission-status-indicator {
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .mission-status-Planifiée {
+            background-color: #e0f2f7; /* Bleu très clair */
+            color: #2196f3; /* Bleu standard */
+            border: 1px solid #90caf9;
+        }
+        .mission-status-En_cours {
+            background-color: #fff3e0; /* Orange très clair */
+            color: #ff9800; /* Orange standard */
+            border: 1px solid #ffcc80;
+        }
+        .mission-status-Terminée {
+            background-color: #e8f5e9; /* Vert très clair */
+            color: #4caf50; /* Vert standard */
+            border: 1px solid #a5d6a7;
+        }
+        .mission-status-Annulée {
+            background-color: #ffebee; /* Rouge très clair */
+            color: #f44336; /* Rouge standard */
+            border: 1px solid #ef9a9a;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h1>Liste des Missions</h1>
+
+    <p><a href="{{ url_for('main.add_mission') }}" class="action-link">Planifier une nouvelle Mission</a></p>
+
+    <form method="GET" action="{{ url_for('main.liste_missions') }}" class="search-form">
+        <div class="search-group">
+            <label for="chauffeur">Par chauffeur:</label>
+            <input type="text" id="chauffeur" name="chauffeur" placeholder="Nom chauffeur..." value="{{ search_chauffeur if search_chauffeur else '' }}">
+        </div>
+        <div class="search-group">
+            <label for="vehicule">Par véhicule:</label>
+            <input type="text" id="vehicule" name="vehicule" placeholder="Immat. véhicule..." value="{{ search_vehicule if search_vehicule else '' }}">
+        </div>
+        <div class="search-group">
+            <label for="date_from">Date début (min):</label>
+            <input type="date" id="date_from" name="date_from" value="{{ search_date_from if search_date_from else '' }}">
+        </div>
+        <div class="search-group">
+            <label for="date_to">Date fin (max):</label>
+            <input type="date" id="date_to" name="date_to" value="{{ search_date_to if search_date_to else '' }}">
+        </div>
+        
+        <button type="submit" class="action-link">Rechercher</button>
+        {% if search_chauffeur or search_vehicule or search_date_from or search_date_to %}
+            <a href="{{ url_for('main.liste_missions') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Effacer Filtre</a>
+        {% endif %}
+    </form>
+
+    {% if missions %}
+        <div style="overflow-x:auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Chauffeur</th>
+                    <th>Véhicule</th>
+                    <th>Feuille de Route</th>
+                    <th>Date Début</th>
+                    <th>Heure Début</th>
+                    <th>Date Fin</th>
+                    <th>Heure Fin</th>
+                    <th>Statut</th>
+                    <th>Détails Commande</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for mission in missions %}
+                <tr>
+                    <td>{{ mission.id_mission }}</td>
+                    <td>{{ mission.chauffeur.nom_complet if mission.chauffeur else 'N/A' }}</td>
+                    <td>{{ mission.vehicule.immatriculation_ve if mission.vehicule else 'N/A' }}</td>
+                    <td>{{ (mission.feuille_de_route.description if mission.feuille_de_route and mission.feuille_de_route.description else 'ID: ' + mission.feuille_de_route.id_feuille_de_route|string) if mission.feuille_de_route else 'Non Affectée' }}</td>
+                    <td>{{ mission.date_debut.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ mission.heure_debut.strftime('%H:%M') }}</td>
+                    <td>{{ mission.date_fin.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ mission.heure_fin.strftime('%H:%M') }}</td>
+                    <td>
+                        <span class="mission-status-indicator mission-status-{{ mission.statut.replace(' ', '_') }}">
+                            {{ mission.statut }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if mission.details_commandes %}
+                            <ul class="details-list">
+                            {% for detail in mission.details_commandes %}
+                                <li>Réf: {{ detail.entete_commande.reference if detail.entete_commande else 'N/A' }} (Qty: {{ detail.quantite }})</li>
+                            {% endfor %}
+                            </ul>
+                        {% else %}
+                            Aucun
+                        {% endif %}
+                    </td>
+                    <td>
+                        {# Bouton pour imprimer le rapport #}
+                        <a href="{{ url_for('main.mission_report', mission_id=mission.id_mission) }}" 
+                           class="action-link" 
+                           style="background-color: #17a2b8; border-color: #17a2b8;" 
+                           target="_blank">Imprimer Rapport</a>
+                        
+                        <a href="{{ url_for('main.edit_mission', mission_id=mission.id_mission) }}" class="action-link" style="background-color: #ffc107; border-color: #ffc107; color: #212529;">Modifier</a>
+                        <a href="{{ url_for('main.delete_mission', mission_id=mission.id_mission) }}" 
+                           class="action-link delete-link" 
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette mission ?');">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    {% else %}
+        {% if search_chauffeur or search_vehicule or search_date_from or search_date_to %}
+            <p>Aucune mission trouvée avec les critères de filtre actuels.</p>
+        {% else %}
+            <p>Aucune mission enregistrée pour le moment.</p>
+        {% endif %}
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des Entêtes de Commande - TMS{% endblock %}
+
+{% block head_extra %}
+    <style>
+        .search-form {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap; 
+            align-items: flex-end; 
+            gap: 15px; 
+        }
+        .search-group {
+            display: flex;
+            flex-direction: column; 
+            gap: 5px;
+        }
+        .search-form input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 180px; 
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h1>Liste des Entêtes de Commande</h1>
+
+    <p><a href="{{ url_for('main.add_entete_commande') }}" class="action-link">Créer une nouvelle Entête de Commande</a></p>
+
+    <form method="GET" action="{{ url_for('main.liste_entetes_commande') }}" class="search-form">
+        <div class="search-group">
+            <label for="reference">Par référence:</label>
+            <input type="text" id="reference" name="reference" placeholder="Référence..." value="{{ search_reference if search_reference else '' }}">
+        </div>
+        <div class="search-group">
+            <label for="client">Par client:</label>
+            <input type="text" id="client" name="client" placeholder="Nom client..." value="{{ search_client if search_client else '' }}">
+        </div>
+        <div class="search-group">
+            <label for="service">Par service:</label>
+            <input type="text" id="service" name="service" placeholder="Nom service..." value="{{ search_service if search_service else '' }}">
+        </div>
+        
+        <button type="submit" class="action-link">Rechercher</button>
+        {% if search_reference or search_client or search_service %}
+            <a href="{{ url_for('main.liste_entetes_commande') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Effacer Filtre</a>
+        {% endif %}
+    </form>
+
+    {% if entetes %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Référence</th>
+                    <th>Date Commande</th>
+                    <th>Client Initial</th>
+                    <th>Service Client</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for entete in entetes %}
+                <tr>
+                    <td>{{ entete.id_entete_commande }}</td>
+                    <td>{{ entete.reference }}</td>
+                    <td>{{ entete.date_commande.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ entete.client_initial.nom if entete.client_initial else 'N/A' }}</td>
+                    <td>{{ entete.service_client.nom_service if entete.service_client else 'N/A' }}</td>
+                    <td>
+                        <a href="{{ url_for('main.liste_details_commande', entete_id=entete.id_entete_commande) }}" class="action-link" style="background-color: #17a2b8; border-color: #17a2b8;">Détails</a>
+                        <a href="{{ url_for('main.edit_entete_commande', entete_id=entete.id_entete_commande) }}" class="action-link" style="background-color: #ffc107; border-color: #ffc107; color: #212529;">Modifier</a>
+                        <a href="{{ url_for('main.delete_entete_commande', entete_id=entete.id_entete_commande) }}" 
+                           class="action-link delete-link" 
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette entête et tous ses détails ?');">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        {% if search_reference or search_client or search_service %}
+            <p>Aucune entête de commande trouvée avec les critères de filtre actuels.</p>
+        {% else %}
+            <p>Aucune entête de commande enregistrée pour le moment.</p>
+        {% endif %}
+    {% endif %}
+{% endblock %}

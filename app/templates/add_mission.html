@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Planifier Mission - TMS{% endblock %}
+
+{% block content %}
+    <h1>Planifier une Nouvelle Mission</h1>
+
+    {% if form_error %}
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.add_mission') }}">
+        <div>
+            <label for="id_chauffeur">Chauffeur (Obligatoire):</label>
+            <select id="id_chauffeur" name="id_chauffeur" required>
+                 <option value="">-- Sélectionnez un chauffeur --</option>
+                {% if chauffeurs %}
+                    {% for chauffeur in chauffeurs %}
+                        <option value="{{ chauffeur.id_chauffeur }}" 
+                                {% if request.form.get('id_chauffeur') and request.form.get('id_chauffeur')|int == chauffeur.id_chauffeur %}selected{% endif %}>
+                            {{ chauffeur.nom }} {{ chauffeur.prenom }}
+                        </option>
+                    {% endfor %}
+                {% else %}
+                    <option value="" disabled>Aucun chauffeur disponible</option>
+                {% endif %}
+            </select>
+            {% if not chauffeurs %}
+                <p style="color: red;">Veuillez d'abord <a href="{{ url_for('main.add_chauffeur') }}">ajouter un Chauffeur</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <label for="id_vehicule">Véhicule (Obligatoire):</label>
+            <select id="id_vehicule" name="id_vehicule" required>
+                 <option value="">-- Sélectionnez un véhicule --</option>
+                {% if vehicules %}
+                    {% for vehicule in vehicules %}
+                        <option value="{{ vehicule.id_vehicule }}" 
+                                {% if request.form.get('id_vehicule') and request.form.get('id_vehicule')|int == vehicule.id_vehicule %}selected{% endif %}>
+                            {{ vehicule.immatriculation_ve }} ({{ vehicule.categorie }})
+                        </option>
+                    {% endfor %}
+                {% else %}
+                     <option value="" disabled>Aucun véhicule disponible</option>
+                {% endif %}
+            </select>
+            {% if not vehicules %}
+                <p style="color: red;">Veuillez d'abord <a href="{{ url_for('main.add_vehicule') }}">ajouter un Véhicule</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <label for="id_destination">Destination Principale (Optionnel):</label>
+            <select id="id_destination" name="id_destination">
+                <option value="">-- Sélectionner une Destination --</option>
+                {% if destinations %}
+                    {% for destination in destinations %}
+                        <option value="{{ destination.id_destination }}" 
+                                {% if request.form.get('id_destination') and request.form.get('id_destination')|int == destination.id_destination %}selected{% endif %}>
+                            {{ destination.description }} (Lat: {{ destination.latitude }}, Long: {{ destination.longitude }})
+                        </option>
+                    {% endfor %}
+                {% else %}
+                     <option value="" disabled>Aucune destination disponible</option>
+                {% endif %}
+            </select>
+            {% if not destinations %}
+                 <p style="color: #777; font-style: italic;">(Aucune destination disponible. Vous pouvez <a href="{{ url_for('main.add_destination') }}">en ajouter une</a>.)</p>
+            {% endif %}
+        </div>
+        <div>
+            <label for="id_feuille_de_route">Feuille de Route (Optionnel):</label>
+            <select id="id_feuille_de_route" name="id_feuille_de_route">
+                <option value="">-- Non Affectée --</option>
+                {% if feuilles_de_route %}
+                    {% for fdr in feuilles_de_route %}
+                        <option value="{{ fdr.id_feuille_de_route }}" 
+                                {% if request.form.get('id_feuille_de_route') and request.form.get('id_feuille_de_route')|int == fdr.id_feuille_de_route %}selected{% endif %}>
+                            ID: {{ fdr.id_feuille_de_route }} - {{ fdr.description if fdr.description else 'Sans description' }} (Départ: {{ fdr.date_depart_prevu.strftime('%d/%m/%Y') }})
+                        </option>
+                    {% endfor %}
+                {% else %}
+                     <option value="" disabled>Aucune feuille de route disponible</option>
+                {% endif %}
+            </select>
+             {% if not feuilles_de_route %}
+                 <p style="color: #777; font-style: italic;">(Aucune feuille de route disponible. Vous pouvez <a href="{{ url_for('main.add_feuille_de_route') }}">en ajouter une</a>.)</p>
+            {% endif %}
+        </div>
+        <div>
+            <label for="date_debut">Date de Début (Obligatoire):</label>
+            <input type="date" id="date_debut" name="date_debut" value="{{ request.form.get('date_debut') or '' }}" required>
+        </div>
+        <div>
+            <label for="heure_debut">Heure de Début (Obligatoire):</label>
+            <input type="time" id="heure_debut" name="heure_debut" value="{{ request.form.get('heure_debut') or '' }}" required>
+        </div>
+        <div>
+            <label for="date_fin">Date de Fin (Obligatoire):</label>
+            <input type="date" id="date_fin" name="date_fin" value="{{ request.form.get('date_fin') or '' }}" required>
+        </div>
+        <div>
+            <label for="heure_fin">Heure de Fin (Obligatoire):</label>
+            <input type="time" id="heure_fin" name="heure_fin" value="{{ request.form.get('heure_fin') or '' }}" required>
+        </div>
+        <div>
+            <button type="submit" {% if not chauffeurs or not vehicules %}disabled{% endif %}>Planifier Mission</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_missions') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à la liste</a></p>
+{% endblock %}

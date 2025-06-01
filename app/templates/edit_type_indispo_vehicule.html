@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier Type Indisponibilité Véhicule - TMS{% endblock %}
+
+{% block content %}
+    <h1>Modifier le Type d'Indisponibilité Véhicule: {{ type_indispo.nom_type }}</h1>
+
+    {% if form_error %}
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.edit_type_indispo_vehicule', type_id=type_indispo.id_type_indispo_vehicule) }}">
+        <div>
+            <label for="nom_type">Nom du Type (Ex: Panne, Entretien, Réparation) (Obligatoire):</label>
+            <input type="text" id="nom_type" name="nom_type" value="{{ type_indispo.nom_type }}" required>
+        </div>
+        <div>
+            <button type="submit">Enregistrer les modifications</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_types_indispo_vehicule') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à la liste</a></p>
+{% endblock %}

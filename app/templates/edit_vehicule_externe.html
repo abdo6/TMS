@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier Véhicule Externe {{ vehicule_externe.immatriculation_ve }} - TMS{% endblock %}
+
+{% block content %}
+    <h1>Modifier le Véhicule Externe: {{ vehicule_externe.immatriculation_ve }}</h1>
+
+    {% if form_error %}
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.edit_vehicule_externe', vehicule_id=vehicule_externe.id_vehicule_externe) }}">
+        <div>
+            <label for="immatriculation_ve">Immatriculation (Obligatoire):</label>
+            <input type="text" id="immatriculation_ve" name="immatriculation_ve" value="{{ vehicule_externe.immatriculation_ve }}" required>
+        </div>
+        <div>
+            <label for="categorie">Catégorie (Ex: Camion, Utilitaire):</label>
+            <input type="text" id="categorie" name="categorie" value="{{ vehicule_externe.categorie or '' }}">
+        </div>
+        <div>
+            <label for="description">Description:</label>
+            <input type="text" id="description" name="description" value="{{ vehicule_externe.description or '' }}">
+        </div>
+        <div>
+            <label for="id_sous_traitant">Sous-traitant (Obligatoire):</label>
+            <select id="id_sous_traitant" name="id_sous_traitant" required>
+                <option value="">-- Sélectionnez un sous-traitant --</option>
+                {% for st in sous_traitants %}
+                    <option value="{{ st.id_sous_traitant }}" 
+                            {% if st.id_sous_traitant == vehicule_externe.id_sous_traitant %}selected{% endif %}>
+                        {{ st.nom_entreprise }}
+                    </option>
+                {% endfor %}
+            </select>
+            {% if not sous_traitants %}
+                 <p style="color: red;">Aucun sous-traitant disponible. Veuillez en <a href="{{ url_for('main.add_sous_traitant') }}">ajouter un</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <button type="submit">Enregistrer les modifications</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_vehicules_externes') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à la liste</a></p>
+{% endblock %}

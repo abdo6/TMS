@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Détails Commande {{ entete.reference }} - TMS{% endblock %}
+
+{% block content %}
+    <h1>Détails de la Commande: {{ entete.reference }} (ID: {{ entete.id_entete_commande }})</h1>
+    <p>
+        <strong>Client:</strong> {{ entete.client_initial.nom if entete.client_initial else 'N/A' }} | 
+        <strong>Service:</strong> {{ entete.service_client.nom_service if entete.service_client else 'N/A' }} | 
+        <strong>Date:</strong> {{ entete.date_commande.strftime('%d/%m/%Y') }}
+    </p>
+
+    <p><a href="{{ url_for('main.add_detail_commande', entete_id=entete.id_entete_commande) }}" class="action-link">Ajouter un nouveau Détail de Commande</a></p>
+
+    {% if details %}
+        <div style="overflow-x:auto;"> {# Pour la responsivité sur petits écrans #}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID Détail</th>
+                    <th>Quantité</th>
+                    <th>Description Colis</th>
+                    <th>Volume (m³)</th>
+                    <th>Poids (kg)</th>
+                    <th>Type Véhicule Requis</th>
+                    <th>Client Final</th>
+                    <th>Destination</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for detail in details %}
+                <tr>
+                    <td>{{ detail.id_detail_commande }}</td>
+                    <td>{{ detail.quantite }}</td>
+                    <td>{{ detail.description_colis if detail.description_colis else 'N/A' }}</td>
+                    <td>{{ detail.volume if detail.volume is not none else 'N/A' }}</td>
+                    <td>{{ detail.poids if detail.poids is not none else 'N/A' }}</td>
+                    <td>{{ detail.type_vehicule.nom_type if detail.type_vehicule else 'N/A' }}</td>
+                    <td>{{ detail.client_final.nom if detail.client_final else 'N/A' }}</td>
+                    <td>{{ detail.destination.description if detail.destination else 'N/A' }}</td>
+                    <td>
+                        <a href="{{ url_for('main.edit_detail_commande', entete_id=entete.id_entete_commande, detail_id=detail.id_detail_commande) }}" class="action-link" style="background-color: #ffc107; border-color: #ffc107; color: #212529;">Modifier</a>
+                        <a href="{{ url_for('main.delete_detail_commande', entete_id=entete.id_entete_commande, detail_id=detail.id_detail_commande) }}" 
+                           class="action-link delete-link" 
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce détail de commande ?');">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    {% else %}
+        <p>Aucun détail de commande enregistré pour cette entête.</p>
+    {% endif %}
+
+    <p><a href="{{ url_for('main.liste_entetes_commande') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour aux Entêtes de Commande</a></p>
+{% endblock %}

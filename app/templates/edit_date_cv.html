@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier Date Validation Chauffeur - TMS{% endblock %}
+
+{% block content %}
+    <h1>Modifier Date de Validation Chauffeur pour: {{ date_cv.chauffeur.nom }} {{ date_cv.chauffeur.prenom }}</h1>
+
+    {% if form_error %}
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.edit_date_cv', date_id=date_cv.id_date_cv) }}">
+        <div>
+            <label for="id_chauffeur">Chauffeur (Obligatoire):</label>
+            <select id="id_chauffeur" name="id_chauffeur" required>
+                 <option value="">-- Sélectionnez un chauffeur --</option>
+                {% for chauffeur in chauffeurs %}
+                    <option value="{{ chauffeur.id_chauffeur }}" 
+                            {% if chauffeur.id_chauffeur == date_cv.id_chauffeur %}selected{% endif %}>
+                        {{ chauffeur.nom }} {{ chauffeur.prenom }}
+                    </option>
+                {% endfor %}
+            </select>
+             {% if not chauffeurs %}
+                 <p style="color: red;">Aucun chauffeur disponible. Veuillez en <a href="{{ url_for('main.add_chauffeur') }}">ajouter un</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <label for="description">Description (Ex: Permis, Visite Médicale):</label>
+            <input type="text" id="description" name="description" value="{{ date_cv.description or '' }}">
+        </div>
+        <div>
+            <label for="date_debut">Date de Début de Validité (Obligatoire):</label>
+            <input type="date" id="date_debut" name="date_debut" value="{{ date_cv.date_debut.strftime('%Y-%m-%d') }}" required>
+        </div>
+        <div>
+            <label for="date_fin">Date de Fin de Validité (Obligatoire):</label>
+            <input type="date" id="date_fin" name="date_fin" value="{{ date_cv.date_fin.strftime('%Y-%m-%d') }}" required>
+        </div>
+        <div>
+            <button type="submit">Enregistrer les modifications</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_dates_cv') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à la liste</a></p>
+{% endblock %}

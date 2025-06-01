@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}Tableau de Bord - TMS{% endblock %}
+
+{% block head_extra %}
+    <style>
+        .dashboard-section {
+            border: 1px solid #e0f2f7; 
+            background-color: #f1faff; 
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .dashboard-section h2 {
+            color: #0056b3; /* Bleu plus foncé pour le titre */
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            margin-top: 0; /* Enlever marge haute du h2 */
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Cartes un peu plus larges */
+            gap: 25px; /* Plus d'espace */
+        }
+        .stat-card {
+            background-color: white;
+            border: 1px solid #dee2e6;
+            border-left: 5px solid #007bff; /* Bordure latérale colorée */
+            border-radius: 5px;
+            padding: 20px;
+            text-align: left; /* Aligner le texte à gauche */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.07);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .stat-card h3 {
+            margin-top: 0;
+            margin-bottom: 8px; /* Moins d'espace sous le titre de la carte */
+            color: #495057;
+            font-size: 1.1em;
+            font-weight: 600; /* Un peu plus gras */
+        }
+        .stat-card .value {
+            font-size: 2.5em; /* Valeur plus grande */
+            font-weight: 700; /* Très gras */
+            color: #212529; /* Noir standard */
+            margin-top: 5px;
+            display: block; /* Pour prendre toute la largeur */
+        }
+        /* Couleurs spécifiques pour les bordures latérales */
+        .stat-card.danger { border-left-color: #dc3545; }
+        .stat-card.danger .value { color: #dc3545; }
+        .stat-card.warning { border-left-color: #ffc107; }
+        .stat-card.warning .value { color: #b8860b; } /* Un jaune plus foncé pour le texte */
+        .stat-card.info { border-left-color: #17a2b8; }
+        .stat-card.info .value { color: #17a2b8; }
+
+        .role-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+        }
+        .role-section h2 {
+            font-size: 1.5em;
+            color: #343a40;
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #ced4da;
+            padding-bottom: 8px;
+        }
+        /* Styles pour les alertes de validité dans le tableau de bord */
+        .alert-item {
+            font-weight: bold;
+            margin-bottom: 5px; /* Espace entre les alertes */
+            list-style: none; /* Pas de puce par défaut sur le li */
+        }
+
+        .alert-item-description {
+            font-style: italic;
+            display: block; /* Pour que cela apparaisse sur une nouvelle ligne */
+            font-weight: normal;
+            font-size: 0.9em;
+        }
+
+        .alert-expired {
+            color: #dc3545; /* Rouge pour expiré */
+        }
+
+        .alert-expiring-soon {
+            color: #ff9800; /* Orange pour expire bientôt */
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h1>Tableau de Bord Principal</h1>
+    <p>Bienvenue sur votre Système de Gestion des Transports.</p>
+
+    {% if current_user.is_authenticated %}
+        {% if current_user.role in ['ADMIN', 'RH', 'PLANIFIER', 'CHARGE_EXPLOITATION', 'APPROVISIONNEUR', 'CHARGE_MAINTENANCE'] %}
+            <div class="dashboard-section">
+                <h2>Aperçu des Indicateurs Clés</h2>
+                <div class="stats-grid">
+                    <div class="stat-card info">
+                        <h3>Total Chauffeurs</h3>
+                        <div class="value">{{ stats.get('total_chauffeurs', 'N/A') }}</div>
+                    </div>
+                    <div class="stat-card info">
+                        <h3>Total Véhicules</h3>
+                        <div class="value">{{ stats.get('total_vehicules', 'N/A') }}</div>
+                    </div>
+                    <div class="stat-card warning">
+                        <h3>Missions Actives</h3>
+                        <div class="value">{{ stats.get('missions_actives', 'N/A') }}</div>
+                    </div>
+                    <div class="stat-card danger">
+                        <h3>Commandes Non Planifiées</h3>
+                        <div class="value">{{ stats.get('commandes_non_planifiees_count', 'N/A') }}</div>
+                    </div>
+                    <div class="stat-card danger">
+                        <h3>Véhicules Indisponibles</h3>
+                        <div class="value">{{ stats.get('vehicules_indisponibles_count', 'N/A') }}</div>
+                    </div>
+                    <div class="stat-card danger">
+                        <h3>Chauffeurs Indisponibles</h3>
+                        <div class="value">{{ stats.get('chauffeurs_indisponibles_count', 'N/A') }}</div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if current_user.role in ['ADMIN', 'RH', 'CHARGE_MAINTENANCE'] %}
+            <div class="dashboard-section" style="border-left: 5px solid #ffc107; background-color: #fffaf0;"> {# Bordure jaune pour les alertes #}
+                <h2>Alertes de Validité des Documents</h2>
+                <div class="stats-grid"> {# Réutiliser la grille pour les alertes #}
+                    {# Alertes Chauffeurs #}
+                    {% if current_user.role in ['ADMIN', 'RH'] %}
+                        <div class="stat-card warning">
+                            <h3>Chauffeurs: Documents Expirant / Expirés</h3>
+                            {% if alerts.chauffeur_cv %}
+                                <ul style="list-style: none; padding: 0;">
+                                    {% for alert in alerts.chauffeur_cv %}
+                                        <li class="alert-item {% if alert.type == 'expiré' %}alert-expired{% else %}alert-expiring-soon{% endif %}">
+                                            {{ alert.chauffeur_nom }} : {{ alert.description }} (fin: {{ alert.date_fin.strftime('%d/%m/%Y') }})
+                                            {% if alert.type == 'expiré' %}
+                                                <span class="alert-item-description">(Expiré depuis {{ alert.days_left * -1 }} jours)</span>
+                                            {% else %}
+                                                <span class="alert-item-description">(Expire dans {{ alert.days_left }} jours)</span>
+                                            {% endif %}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p style="font-size: 0.9em; color: #555;">Aucune alerte de document chauffeur.</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    {# Alertes Véhicules #}
+                    {% if current_user.role in ['ADMIN', 'CHARGE_MAINTENANCE'] %}
+                        <div class="stat-card warning">
+                            <h3>Véhicules: Contrôles Expirant / Expirés</h3>
+                            {% if alerts.vehicule_tr %}
+                                <ul style="list-style: none; padding: 0;">
+                                    {% for alert in alerts.vehicule_tr %}
+                                        <li class="alert-item {% if alert.type == 'expiré' %}alert-expired{% else %}alert-expiring-soon{% endif %}">
+                                            {{ alert.vehicule_immat }} : {{ alert.description }} (fin: {{ alert.date_fin.strftime('%d/%m/%Y') }})
+                                            {% if alert.type == 'expiré' %}
+                                                <span class="alert-item-description">(Expiré depuis {{ alert.days_left * -1 }} jours)</span>
+                                            {% else %}
+                                                <span class="alert-item-description">(Expire dans {{ alert.days_left }} jours)</span>
+                                            {% endif %}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p style="font-size: 0.9em; color: #555;">Aucune alerte de document véhicule.</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="role-section-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+            {% if current_user.role == 'ADMIN' %}
+                <div class="role-section">
+                    <h2>Administration</h2>
+                    <a href="{{ url_for('main.liste_users') }}" class="action-link">Gérer les Utilisateurs</a>
+                </div>
+            {% endif %}
+
+            {% if current_user.role in ['RH', 'ADMIN'] %}
+                <div class="role-section">
+                    <h2>Ressources Humaines</h2>
+                    <a href="{{ url_for('main.liste_chauffeurs') }}" class="action-link">Gérer Chauffeurs</a>
+                    <a href="{{ url_for('main.liste_types_indispo_chauffeur') }}" class="action-link">Types Indispo. Chauffeur</a>
+                    <a href="{{ url_for('main.liste_indispo_chauffeur') }}" class="action-link">Indispo. Chauffeurs</a>
+                    <a href="{{ url_for('main.liste_dates_cv') }}" class="action-link">Dates CV Chauffeur</a>
+                </div>
+            {% endif %}
+
+            {% if current_user.role in ['PLANIFIER', 'ADMIN'] %}
+                <div class="role-section">
+                    <h2>Planification</h2>
+                    <a href="{{ url_for('main.liste_missions') }}" class="action-link">Gérer Missions</a>
+                    <a href="{{ url_for('main.liste_feuilles_de_route') }}" class="action-link">Feuilles de Route</a>
+                    <a href="{{ url_for('main.liste_commandes_non_planifiees') }}" class="action-link">Cmds Non Planifiées</a>
+                    <a href="{{ url_for('main.map_view') }}" class="action-link">Voir Carte (Live)</a>
+                    <a href="{{ url_for('main.gantt_missions') }}" class="action-link">Voir Gantt</a>
+                    <a href="{{ url_for('main.chauffeur_history_map') }}" class="action-link">Historique Trajet Chauffeur</a>
+                    <a href="{{ url_for('main.add_affretement') }}" class="action-link">Demander Affrètement</a>
+                </div>
+            {% endif %}
+
+            {% if current_user.role in ['COMMERCIAL', 'ADMIN'] %}
+                <div class="role-section">
+                    <h2>Commercial</h2>
+                    <a href="{{ url_for('main.liste_clients_initial') }}" class="action-link">Clients Initiaux</a>
+                    <a href="{{ url_for('main.liste_clients_final') }}" class="action-link">Clients Finaux</a>
+                    <a href="{{ url_for('main.liste_service_clients') }}" class="action-link">Services Clients</a>
+                    <a href="{{ url_for('main.liste_entetes_commande') }}" class="action-link">Commandes</a>
+                </div>
+            {% endif %}
+
+            {% if current_user.role in ['CHARGE_EXPLOITATION', 'ADMIN'] %}
+                <div class="role-section">
+                    <h2>Exploitation</h2>
+                    <a href="{{ url_for('main.liste_vehicules') }}" class="action-link">Gérer Véhicules</a>
+                    <a href="{{ url_for('main.liste_types_vehicule') }}" class="action-link">Types Véhicules</a>
+                    <a href="{{ url_for('main.liste_destinations') }}" class="action-link">Destinations</a>
+                    <a href="{{ url_for('main.liste_villes') }}" class="action-link">Villes</a>
+                    <a href="{{ url_for('main.liste_provinces') }}" class="action-link">Provinces</a>
+                    <a href="{{ url_for('main.liste_trajets') }}" class="action-link">Trajets</a>
+                </div>
+            {% endif %}
+
+            {% if current_user.role in ['APPROVISIONNEUR', 'ADMIN'] %}
+                <div class="role-section">
+                    <h2>Approvisionnement</h2>
+                    <a href="{{ url_for('main.liste_sous_traitants') }}" class="action-link">Sous-traitants</a>
+                    <a href="{{ url_for('main.liste_vehicules_externes') }}" class="action-link">Véhicules Externes</a>
+                    <a href="{{ url_for('main.liste_chauffeurs_externes') }}" class="action-link">Chauffeurs Externes</a>
+                    <a href="{{ url_for('main.liste_affretements') }}" class="action-link">Affrètements</a>
+                </div>
+            {% endif %}
+
+            {% if current_user.role in ['CHARGE_MAINTENANCE', 'ADMIN'] %}
+                <div class="role-section">
+                    <h2>Maintenance</h2>
+                    <a href="{{ url_for('main.liste_types_indispo_vehicule') }}" class="action-link">Types Indispo. Véhicule</a>
+                    <a href="{{ url_for('main.liste_indispo_vehicule') }}" class="action-link">Indispo. Véhicules</a>
+                    <a href="{{ url_for('main.liste_dates_tr') }}" class="action-link">Dates TR Véhicule</a>
+                </div>
+            {% endif %}
+        </div>
+
+    {% else %}
+        <p>Veuillez vous connecter pour accéder aux fonctionnalités de gestion.</p>
+        <p><a href="{{ url_for('auth.login') }}" class="action-link">Se connecter</a></p>
+    {% endif %}
+{% endblock %}

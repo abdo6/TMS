@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des Affrètements - TMS{% endblock %}
+
+{% block head_extra %}
+    <style>
+        /* Styles spécifiques pour cette page si besoin, sinon les styles de base.html s'appliquent */
+        /* Par exemple, pour rendre le tableau plus compact si beaucoup de colonnes */
+        /* table th, table td { font-size: 0.9em; padding: 6px 8px; } */
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h1>Liste des Demandes d'Affrètement</h1>
+
+    <p><a href="{{ url_for('main.add_affretement') }}" class="action-link">Ajouter une Demande d'Affrètement</a></p>
+
+    {% if affretements %}
+        <div style="overflow-x:auto;"> {# Pour la responsivité sur petits écrans #}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Date Demande</th>
+                    <th>Début Souhaité</th>
+                    <th>Fin Souhaitée</th>
+                    <th>Description Besoin</th>
+                    <th>Statut</th>
+                    <th>Coût Estimé</th>
+                    <th>Détail Commande (Réf.)</th>
+                    <th>Sous-traitant</th>
+                    <th>Véhicule Ext.</th>
+                    <th>Chauffeur Ext.</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for affretement in affretements %}
+                <tr>
+                    <td>{{ affretement.id_affretement }}</td>
+                    <td>{{ affretement.date_demande.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ affretement.date_debut_souhaitee.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ affretement.date_fin_souhaitee.strftime('%d/%m/%Y') }}</td>
+                    <td title="{{ affretement.description_besoin }}">{{ affretement.description_besoin[:50] }}{% if affretement.description_besoin|length > 50 %}...{% endif %}</td>
+                    <td>{{ affretement.statut }}</td>
+                    <td>{{ affretement.cout_estime if affretement.cout_estime is not none else 'N/A' }}</td>
+                    <td>{{ affretement.detail_commande.entete_commande.reference if affretement.detail_commande and affretement.detail_commande.entete_commande else 'N/A' }}</td>
+                    <td>{{ affretement.sous_traitant.nom_entreprise if affretement.sous_traitant else 'N/A' }}</td>
+                    <td>{{ affretement.vehicule_externe.immatriculation_ve if affretement.vehicule_externe else 'N/A' }}</td>
+                    <td>{{ (affretement.chauffeur_externe.nom + " " + affretement.chauffeur_externe.prenom) if affretement.chauffeur_externe else 'N/A' }}</td>
+                    <td>
+                        <a href="{{ url_for('main.edit_affretement', affretement_id=affretement.id_affretement) }}" class="action-link" style="background-color: #ffc107; border-color: #ffc107; color: #212529;">Modifier</a>
+                        <a href="{{ url_for('main.delete_affretement', affretement_id=affretement.id_affretement) }}" 
+                           class="action-link delete-link" 
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette demande d\'affrètement ?');">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    {% else %}
+        <p>Aucune demande d'affrètement enregistrée pour le moment.</p>
+    {% endif %}
+{% endblock %}

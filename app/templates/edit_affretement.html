@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier Demande d'Affrètement {{ affretement.id_affretement }} - TMS{% endblock %}
+
+{% block content %}
+    <h1>Modifier la Demande d'Affrètement: ID {{ affretement.id_affretement }}</h1>
+
+    {% if form_error %}
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.edit_affretement', affretement_id=affretement.id_affretement) }}">
+        <div>
+            <label for="description_besoin">Description du besoin (Obligatoire):</label>
+            <textarea id="description_besoin" name="description_besoin" required>{{ affretement.description_besoin }}</textarea>
+        </div>
+        <div>
+            <label for="date_debut_souhaitee">Date de Début Souhaitée (Obligatoire):</label>
+            <input type="date" id="date_debut_souhaitee" name="date_debut_souhaitee" value="{{ affretement.date_debut_souhaitee.strftime('%Y-%m-%d') }}" required>
+        </div>
+        <div>
+            <label for="date_fin_souhaitee">Date de Fin Souhaitée (Obligatoire):</label>
+            <input type="date" id="date_fin_souhaitee" name="date_fin_souhaitee" value="{{ affretement.date_fin_souhaitee.strftime('%Y-%m-%d') }}" required>
+        </div>
+        <div>
+            <label for="statut">Statut:</label>
+            <select id="statut" name="statut">
+                {% for s in statuts_affretement %} {# Assurez-vous que 'statuts_affretement' est passé par la route #}
+                    <option value="{{ s }}" {% if s == affretement.statut %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="cout_estime">Coût Estimé:</label>
+            <input type="number" step="0.01" id="cout_estime" name="cout_estime" value="{{ affretement.cout_estime or '' }}">
+        </div>
+        <div>
+            <label for="id_detail_commande">Détail de Commande (Optionnel):</label>
+            <select id="id_detail_commande" name="id_detail_commande">
+                <option value="">-- Sélectionner un Détail de Commande --</option>
+                {% for detail in details_commandes %}
+                    <option value="{{ detail.id_detail_commande }}" 
+                            {% if detail.id_detail_commande == affretement.id_detail_commande %}selected{% endif %}>
+                        ID: {{ detail.id_detail_commande }} | Réf: {{ detail.entete_commande.reference if detail.entete_commande else 'N/A' }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="id_sous_traitant">Sous-traitant (Optionnel):</label>
+            <select id="id_sous_traitant" name="id_sous_traitant">
+                <option value="">-- Sélectionner un Sous-traitant --</option>
+                {% for st in sous_traitants %}
+                    <option value="{{ st.id_sous_traitant }}" 
+                            {% if st.id_sous_traitant == affretement.id_sous_traitant %}selected{% endif %}>
+                        {{ st.nom_entreprise }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="id_vehicule_externe">Véhicule Externe (Optionnel):</label>
+            <select id="id_vehicule_externe" name="id_vehicule_externe">
+                <option value="">-- Sélectionner un Véhicule Externe --</option>
+                {% for ve in vehicules_externes %}
+                    <option value="{{ ve.id_vehicule_externe }}" 
+                            {% if ve.id_vehicule_externe == affretement.id_vehicule_externe %}selected{% endif %}>
+                        {{ ve.immatriculation_ve }} ({{ ve.sous_traitant.nom_entreprise if ve.sous_traitant else 'N/A' }})
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="id_chauffeur_externe">Chauffeur Externe (Optionnel):</label>
+            <select id="id_chauffeur_externe" name="id_chauffeur_externe">
+                <option value="">-- Sélectionner un Chauffeur Externe --</option>
+                {% for ce in chauffeurs_externes %}
+                    <option value="{{ ce.id_chauffeur_externe }}" 
+                            {% if ce.id_chauffeur_externe == affretement.id_chauffeur_externe %}selected{% endif %}>
+                        {{ ce.nom }} {{ ce.prenom }} ({{ ce.sous_traitant.nom_entreprise if ce.sous_traitant else 'N/A' }})
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <button type="submit">Enregistrer les modifications</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_affretements') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à la liste</a></p>
+{% endblock %}

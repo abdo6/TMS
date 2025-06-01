@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Types d'Indisponibilité Chauffeur - TMS{% endblock %}
+
+{% block content %}
+    <h1>Types d'Indisponibilité Chauffeur</h1>
+
+    <p><a href="{{ url_for('main.add_type_indispo_chauffeur') }}" class="action-link">Ajouter un nouveau Type</a></p>
+
+    {% if types %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom du Type</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for type_indispo in types %}
+                <tr>
+                    <td>{{ type_indispo.id_type_indispo_chauffeur }}</td>
+                    <td>{{ type_indispo.nom_type }}</td>
+                    <td>
+                        <a href="{{ url_for('main.edit_type_indispo_chauffeur', type_id=type_indispo.id_type_indispo_chauffeur) }}" class="action-link" style="background-color: #ffc107; border-color: #ffc107; color: #212529;">Modifier</a>
+                        <a href="{{ url_for('main.delete_type_indispo_chauffeur', type_id=type_indispo.id_type_indispo_chauffeur) }}" 
+                           class="action-link delete-link" 
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce type d\'indisponibilité ?');">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucun type d'indisponibilité chauffeur enregistré.</p>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des Chauffeurs - TMS{% endblock %}
+
+{% block head_extra %}
+    {# Les styles spécifiques peuvent rester ici ou être déplacés dans style.css global si utilisés ailleurs #}
+    <style>
+        .search-form {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px; 
+        }
+        .search-form input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 300px; 
+        }
+        /* Les styles pour button, .action-link, .delete-link sont maintenant dans base.html via style.css */
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h1>Liste des Chauffeurs</h1>
+
+    <p><a href="{{ url_for('main.add_chauffeur') }}" class="action-link">Ajouter un nouveau Chauffeur</a></p>
+
+    <form method="GET" action="{{ url_for('main.liste_chauffeurs') }}" class="search-form">
+        <label for="search">Rechercher un chauffeur:</label>
+        <input type="text" id="search" name="search" placeholder="Nom, prénom, email..." value="{{ search_query if search_query else '' }}">
+        <button type="submit" class="action-link">Rechercher</button> {# action-link pour style de bouton standard #}
+        {% if search_query %}
+            <a href="{{ url_for('main.liste_chauffeurs') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Effacer</a>
+        {% endif %}
+    </form>
+
+    {% if chauffeurs %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Email</th>
+                    <th>Téléphone</th>
+                    <th>Adresse</th>
+                    <th>Catégorie Permis</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for chauffeur in chauffeurs %}
+                <tr>
+                    <td>{{ chauffeur.id_chauffeur }}</td>
+                    <td>{{ chauffeur.nom }}</td>
+                    <td>{{ chauffeur.prenom }}</td>
+                    <td>{{ chauffeur.email }}</td>
+                    <td>{{ chauffeur.numero_telephone if chauffeur.numero_telephone else 'N/A' }}</td>
+                    <td>{{ chauffeur.adresse if chauffeur.adresse else 'N/A' }}</td>
+                    <td>{{ chauffeur.categorie_ch if chauffeur.categorie_ch else 'N/A' }}</td>
+                    <td>
+                        <a href="{{ url_for('main.edit_chauffeur', chauffeur_id=chauffeur.id_chauffeur) }}" class="action-link" style="background-color: #ffc107; border-color: #ffc107; color: #212529;">Modifier</a>
+                        <a href="{{ url_for('main.delete_chauffeur', chauffeur_id=chauffeur.id_chauffeur) }}" 
+                           class="action-link delete-link" 
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce chauffeur ?');">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        {% if search_query %}
+            <p>Aucun chauffeur trouvé pour la recherche "{{ search_query }}".</p>
+        {% else %}
+            <p>Aucun chauffeur enregistré pour le moment. Cliquez sur "Ajouter un nouveau Chauffeur" pour commencer.</p>
+        {% endif %}
+    {% endif %}
+{% endblock %}

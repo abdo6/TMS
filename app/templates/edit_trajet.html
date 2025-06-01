@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier Trajet {{ trajet.id_trajet }} - TMS{% endblock %}
+
+{% block content %}
+    <h1>Modifier le Trajet: {{ trajet.description if trajet.description else "ID " + trajet.id_trajet|string }}</h1>
+
+    {% if form_error %}
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.edit_trajet', trajet_id=trajet.id_trajet) }}">
+        <div>
+            <label for="description">Description du trajet:</label>
+            <input type="text" id="description" name="description" value="{{ trajet.description or '' }}">
+        </div>
+        <div>
+            <label for="distance_km">Distance (km):</label>
+            <input type="number" step="0.01" id="distance_km" name="distance_km" value="{{ trajet.distance_km or '' }}">
+        </div>
+        <div>
+            <label for="duree_heures">Durée (heures):</label>
+            <input type="number" step="0.01" id="duree_heures" name="duree_heures" value="{{ trajet.duree_heures or '' }}">
+        </div>
+        <div>
+            <label for="id_destination">Destination Finale (Obligatoire):</label>
+            <select id="id_destination" name="id_destination" required>
+                <option value="">-- Sélectionnez une destination --</option>
+                {% for dest in destinations %}
+                    <option value="{{ dest.id_destination }}"
+                            {% if dest.id_destination == trajet.id_destination %}selected{% endif %}>
+                        {{ dest.description }} ({{ dest.ville.nom_ville if dest.ville else 'N/A' }})
+                    </option>
+                {% endfor %}
+            </select>
+            {% if not destinations %}
+                 <p style="color: red;">Aucune destination disponible. Veuillez en <a href="{{ url_for('main.add_destination') }}">ajouter une</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <button type="submit">Enregistrer les modifications</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_trajets') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à la liste</a></p>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Connexion - TMS{% endblock %}
+
+{% block head_extra %}
+    <style>
+        /* Styles spécifiques pour la page de connexion, surchargeant ceux de base.html si nécessaire */
+        body.login-page { /* Classe ajoutée au body pour cibler cette page */
+            background-color: #f0f2f5; /* Un fond légèrement différent pour la page de connexion */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Prend toute la hauteur */
+            padding-top: 0; /* Enlever le padding du body de base.html */
+        }
+        .login-container {
+            background-color: #fff;
+            padding: 30px 40px; /* Plus de padding horizontal */
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px; /* Largeur maximale du conteneur de connexion */
+            text-align: center;
+        }
+        .login-container h1 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+        .login-page .main-nav, .login-page footer { /* Cacher la nav et le footer de base.html */
+            display: none;
+        }
+        .login-page .container { /* Ajuster le container de base.html pour la page de login */
+            width: auto;
+            max-width: none;
+            margin: 0;
+            padding: 0;
+            background-color: transparent;
+            box-shadow: none;
+        }
+        .form-group {
+            margin-bottom: 20px; /* Plus d'espace entre les groupes */
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px; /* Plus d'espace sous le label */
+            color: #555;
+            font-weight: 600; /* Labels un peu plus gras */
+        }
+        .form-group input[type="text"],
+        .form-group input[type="password"] {
+            width: 100%; /* S'assurer qu'il prend toute la largeur du parent .form-group */
+            padding: 12px; /* Inputs plus grands */
+            border: 1px solid #ced4da; /* Bordure standard Bootstrap */
+            border-radius: 4px;
+            font-size: 1em;
+            box-sizing: border-box; /* Important */
+        }
+        .login-container button[type="submit"] { /* Cible spécifiquement le bouton dans login-container */
+            background-color: #007bff;
+            color: white;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.1em;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+        .login-container button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        /* Les messages flash sont déjà stylés dans base.html/style.css */
+    </style>
+{% endblock %}
+
+{# Surcharge du bloc body_class pour ajouter une classe spécifique au body #}
+{% block body_class %}login-page{% endblock %}
+
+{% block content %}
+    <div class="login-container">
+        {# Le logo de la nav pourrait être répété ici si souhaité, ou un logo d'entreprise #}
+        {# <div class="nav-logo" style="text-align: center; margin-bottom: 20px; font-size: 2em;"><a href="{{ url_for('main.index') }}" style="color:#333; text-decoration:none;">TMS APP</a></div> #}
+        
+        <h1>Connexion au TMS</h1>
+
+        {# Les messages flash sont gérés par base.html, mais ils s'afficheront dans le .container de base.html. #}
+        {# Si vous voulez qu'ils soient DANS le login-container, il faut les répéter ici. #}
+        {# Pour la simplicité, on les laisse dans le .container de base.html qui sera caché visuellement pour le reste. #}
+        {# Ou, pour un meilleur contrôle, on peut les mettre ici : #}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flash-messages" style="list-style:none; padding:0; margin-bottom: 15px;">
+                    {% for category, message in messages %}
+                        <li class="flash-message {{ category }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('auth.login') }}"> {# Assurez-vous que request.args.get('next') est géré dans la route si besoin #}
+            <div class="form-group">
+                <label for="username">Nom d'utilisateur :</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Mot de passe :</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Se connecter</button>
+        </form>
+    </div>
+{% endblock %}

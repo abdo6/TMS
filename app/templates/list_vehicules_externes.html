@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des Véhicules Externes - TMS{% endblock %}
+
+{% block content %}
+    <h1>Liste des Véhicules Externes</h1>
+
+    <p><a href="{{ url_for('main.add_vehicule_externe') }}" class="action-link">Ajouter un nouveau Véhicule Externe</a></p>
+
+    {% if vehicules_externes %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Immatriculation</th>
+                    <th>Catégorie</th>
+                    <th>Description</th>
+                    <th>Sous-traitant</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for vehicule in vehicules_externes %}
+                <tr>
+                    <td>{{ vehicule.id_vehicule_externe }}</td>
+                    <td>{{ vehicule.immatriculation_ve }}</td>
+                    <td>{{ vehicule.categorie if vehicule.categorie else 'N/A' }}</td>
+                    <td>{{ vehicule.description if vehicule.description else 'N/A' }}</td>
+                    <td>{{ vehicule.sous_traitant.nom_entreprise if vehicule.sous_traitant else 'N/A' }}</td>
+                    <td>
+                        <a href="{{ url_for('main.edit_vehicule_externe', vehicule_id=vehicule.id_vehicule_externe) }}" class="action-link" style="background-color: #ffc107; border-color: #ffc107; color: #212529;">Modifier</a>
+                        <a href="{{ url_for('main.delete_vehicule_externe', vehicule_id=vehicule.id_vehicule_externe) }}" 
+                           class="action-link delete-link" 
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce véhicule externe ?');">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucun véhicule externe enregistré pour le moment.</p>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Gestion des Utilisateurs - TMS{% endblock %}
+
+{% block head_extra %}
+    <style>
+        .search-form {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px; 
+        }
+        .search-form input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 300px; 
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h1>Gestion des Utilisateurs</h1>
+
+    <p><a href="{{ url_for('main.add_user') }}" class="action-link">Ajouter un nouvel Utilisateur</a></p>
+
+    <form method="GET" action="{{ url_for('main.liste_users') }}" class="search-form">
+        <label for="search">Rechercher un utilisateur:</label>
+        <input type="text" id="search" name="search" placeholder="Nom, email, rôle..." value="{{ search_query if search_query else '' }}">
+        <button type="submit" class="action-link">Rechercher</button>
+        {% if search_query %}
+            <a href="{{ url_for('main.liste_users') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Effacer</a>
+        {% endif %}
+    </form>
+
+    {% if users %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom d'utilisateur</th>
+                    <th>Email</th>
+                    <th>Rôle</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for user_item in users %}
+                <tr>
+                    <td>{{ user_item.id }}</td>
+                    <td>{{ user_item.username }}</td>
+                    <td>{{ user_item.email }}</td>
+                    <td>{{ roles[user_item.role] if user_item.role in roles else user_item.role }}</td> {# roles vient de app_context_processor #}
+                    <td>
+                        <a href="{{ url_for('main.edit_user', user_id=user_item.id) }}" class="action-link" style="background-color: #ffc107; border-color: #ffc107; color: #212529;">Modifier</a>
+                        {% if user_item.id != current_user.id %} {# Empêche l'auto-suppression #}
+                            <a href="{{ url_for('main.delete_user', user_id=user_item.id) }}" 
+                               class="action-link delete-link" 
+                               onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?');">Supprimer</a>
+                        {% else %}
+                            <span style="color: grey; font-style: italic; margin-left: 10px;">(Utilisateur actuel)</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        {% if search_query %}
+            <p>Aucun utilisateur trouvé pour la recherche "{{ search_query }}".</p>
+        {% else %}
+            <p>Aucun utilisateur enregistré pour le moment.</p>
+        {% endif %}
+    {% endif %}
+{% endblock %}

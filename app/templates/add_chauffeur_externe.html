@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Ajouter Chauffeur Externe - TMS{% endblock %}
+
+{% block content %}
+    <h1>Ajouter un Nouveau Chauffeur Externe</h1>
+
+    {% if form_error %}
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.add_chauffeur_externe') }}">
+        <div>
+            <label for="nom">Nom (Obligatoire):</label>
+            <input type="text" id="nom" name="nom" value="{{ request.form.get('nom') or '' }}" required>
+        </div>
+        <div>
+            <label for="prenom">Prénom (Obligatoire):</label>
+            <input type="text" id="prenom" name="prenom" value="{{ request.form.get('prenom') or '' }}" required>
+        </div>
+        <div>
+            <label for="numero_telephone">Téléphone:</label>
+            <input type="tel" id="numero_telephone" name="numero_telephone" value="{{ request.form.get('numero_telephone') or '' }}">
+        </div>
+        <div>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="{{ request.form.get('email') or '' }}">
+        </div>
+        <div>
+            <label for="categorie_permis">Catégorie Permis:</label>
+            <input type="text" id="categorie_permis" name="categorie_permis" value="{{ request.form.get('categorie_permis') or '' }}">
+        </div>
+        <div>
+            <label for="id_sous_traitant">Sous-traitant (Obligatoire):</label>
+            <select id="id_sous_traitant" name="id_sous_traitant" required>
+                {% if sous_traitants %}
+                    {% for st in sous_traitants %}
+                        <option value="{{ st.id_sous_traitant }}" 
+                                {% if request.form.get('id_sous_traitant') and request.form.get('id_sous_traitant')|int == st.id_sous_traitant %}selected{% endif %}>
+                            {{ st.nom_entreprise }}
+                        </option>
+                    {% endfor %}
+                {% else %}
+                    <option value="">-- Aucun sous-traitant disponible --</option>
+                {% endif %}
+            </select>
+            {% if not sous_traitants %}
+                <p style="color: red;">Veuillez d'abord <a href="{{ url_for('main.add_sous_traitant') }}">ajouter un Sous-traitant</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <button type="submit" {% if not sous_traitants %}disabled{% endif %}>Ajouter Chauffeur Externe</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_chauffeurs_externes') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à la liste</a></p>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Ajouter Destination - TMS{% endblock %}
+
+{% block content %}
+    <h1>Ajouter une Nouvelle Destination</h1>
+
+    {% if form_error %} {# Assurez-vous que vos routes passent 'form_error' si nécessaire #}
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.add_destination') }}">
+        <div>
+            <label for="description">Description (Nom du lieu, Obligatoire):</label>
+            <input type="text" id="description" name="description" value="{{ request.form.get('description') or '' }}" required>
+        </div>
+        <div>
+            <label for="latitude">Latitude (Obligatoire):</label>
+            <input type="text" id="latitude" name="latitude" value="{{ request.form.get('latitude') or '' }}" required placeholder="Ex: 33.5731">
+        </div>
+        <div>
+            <label for="longitude">Longitude (Obligatoire):</label>
+            <input type="text" id="longitude" name="longitude" value="{{ request.form.get('longitude') or '' }}" required placeholder="Ex: -7.5898">
+        </div>
+        <div>
+            <label for="id_ville">Ville associée (Optionnel):</label>
+            <select id="id_ville" name="id_ville">
+                <option value="">-- Sélectionner une Ville --</option>
+                {% for ville in villes %}
+                    <option value="{{ ville.id_ville }}" {% if request.form.get('id_ville') and request.form.get('id_ville')|int == ville.id_ville %}selected{% endif %}>
+                        {{ ville.nom_ville }}
+                    </option>
+                {% endfor %}
+            </select>
+            {% if not villes %}
+                <p style="color: #777; font-style: italic;">(Aucune ville disponible. Vous pouvez <a href="{{ url_for('main.add_ville') }}">en ajouter une</a>.)</p>
+            {% endif %}
+        </div>
+        <div>
+            <label for="id_province">Province associée (Optionnel):</label>
+            <select id="id_province" name="id_province">
+                <option value="">-- Sélectionner une Province --</option>
+                {% for province in provinces %}
+                    <option value="{{ province.id_province }}" {% if request.form.get('id_province') and request.form.get('id_province')|int == province.id_province %}selected{% endif %}>
+                        {{ province.nom_province }} ({{ province.ville.nom_ville if province.ville else '' }})
+                    </option>
+                {% endfor %}
+            </select>
+            {% if not provinces %}
+                 <p style="color: #777; font-style: italic;">(Aucune province disponible. Vous pouvez <a href="{{ url_for('main.add_province') }}">en ajouter une</a>.)</p>
+            {% endif %}
+        </div>
+        <div>
+            <button type="submit">Ajouter Destination</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_destinations') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à la liste</a></p>
+{% endblock %}

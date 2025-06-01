@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier Feuille de Route {{ fdr.id_feuille_de_route }} - TMS{% endblock %}
+
+{% block content %}
+    <h1>Modifier la Feuille de Route: {{ fdr.description if fdr.description else "ID " + fdr.id_feuille_de_route|string }}</h1>
+
+    {% if form_error %}
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.edit_feuille_de_route', fdr_id=fdr.id_feuille_de_route) }}">
+        <div>
+            <label for="description">Description (Optionnel):</label>
+            <input type="text" id="description" name="description" value="{{ fdr.description or '' }}">
+        </div>
+        <div>
+            <label for="id_chauffeur">Chauffeur (Obligatoire):</label>
+            <select id="id_chauffeur" name="id_chauffeur" required>
+                 <option value="">-- Sélectionnez un chauffeur --</option>
+                {% for chauffeur in chauffeurs %}
+                    <option value="{{ chauffeur.id_chauffeur }}" 
+                            {% if chauffeur.id_chauffeur == fdr.id_chauffeur %}selected{% endif %}>
+                        {{ chauffeur.nom }} {{ chauffeur.prenom }}
+                    </option>
+                {% endfor %}
+            </select>
+             {% if not chauffeurs %}
+                 <p style="color: red;">Aucun chauffeur disponible. Veuillez en <a href="{{ url_for('main.add_chauffeur') }}">ajouter un</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <label for="id_vehicule">Véhicule (Obligatoire):</label>
+            <select id="id_vehicule" name="id_vehicule" required>
+                <option value="">-- Sélectionnez un véhicule --</option>
+                {% for vehicule in vehicules %}
+                    <option value="{{ vehicule.id_vehicule }}" 
+                            {% if vehicule.id_vehicule == fdr.id_vehicule %}selected{% endif %}>
+                        {{ vehicule.immatriculation_ve }} ({{ vehicule.categorie }})
+                    </option>
+                {% endfor %}
+            </select>
+            {% if not vehicules %}
+                 <p style="color: red;">Aucun véhicule disponible. Veuillez en <a href="{{ url_for('main.add_vehicule') }}">ajouter un</a>.</p>
+            {% endif %}
+        </div>
+
+        <h3>Dates et Heures Prévues</h3>
+        <div>
+            <label for="date_depart_prevu">Date Départ Prévu (Obligatoire):</label>
+            <input type="date" id="date_depart_prevu" name="date_depart_prevu" value="{{ fdr.date_depart_prevu.strftime('%Y-%m-%d') }}" required>
+        </div>
+        <div>
+            <label for="heure_depart_prevu">Heure Départ Prévue (Obligatoire):</label>
+            <input type="time" id="heure_depart_prevu" name="heure_depart_prevu" value="{{ fdr.heure_depart_prevu.strftime('%H:%M') }}" required>
+        </div>
+        <div>
+            <label for="date_arrivee_prevue">Date Arrivée Prévue (Obligatoire):</label>
+            <input type="date" id="date_arrivee_prevue" name="date_arrivee_prevue" value="{{ fdr.date_arrivee_prevue.strftime('%Y-%m-%d') }}" required>
+        </div>
+        <div>
+            <label for="heure_arrivee_prevue">Heure Arrivée Prévue (Obligatoire):</label>
+            <input type="time" id="heure_arrivee_prevue" name="heure_arrivee_prevue" value="{{ fdr.heure_arrivee_prevue.strftime('%H:%M') }}" required>
+        </div>
+
+        <h3>Données Réelles (Optionnelles)</h3>
+        <div>
+            <label for="date_depart_reel">Date Départ Réel:</label>
+            <input type="date" id="date_depart_reel" name="date_depart_reel" value="{{ fdr.date_depart_reel.strftime('%Y-%m-%d') if fdr.date_depart_reel else '' }}">
+        </div>
+        <div>
+            <label for="heure_depart_reel">Heure Départ Réelle:</label>
+            <input type="time" id="heure_depart_reel" name="heure_depart_reel" value="{{ fdr.heure_depart_reel.strftime('%H:%M') if fdr.heure_depart_reel else '' }}">
+        </div>
+        <div>
+            <label for="date_arrivee_reelle">Date Arrivée Réelle:</label>
+            <input type="date" id="date_arrivee_reelle" name="date_arrivee_reelle" value="{{ fdr.date_arrivee_reelle.strftime('%Y-%m-%d') if fdr.date_arrivee_reelle else '' }}">
+        </div>
+        <div>
+            <label for="heure_arrivee_reelle">Heure Arrivée Réelle:</label>
+            <input type="time" id="heure_arrivee_reelle" name="heure_arrivee_reelle" value="{{ fdr.heure_arrivee_reelle.strftime('%H:%M') if fdr.heure_arrivee_reelle else '' }}">
+        </div>
+        <div>
+            <label for="km_debut">Kilométrage Début:</label>
+            <input type="number" step="0.01" id="km_debut" name="km_debut" value="{{ fdr.km_debut or '' }}">
+        </div>
+        <div>
+            <label for="km_fin">Kilométrage Fin:</label>
+            <input type="number" step="0.01" id="km_fin" name="km_fin" value="{{ fdr.km_fin or '' }}">
+        </div>
+
+        <div>
+            <button type="submit">Enregistrer les modifications</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_feuilles_de_route') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à la liste</a></p>
+{% endblock %}

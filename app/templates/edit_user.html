@@ -1,0 +1,142 @@
+{# app/templates/edit_user.html #}
+{% extends "base.html" %}
+
+{% block title %}Modifier Utilisateur {{ user.username }} - TMS{% endblock %}
+
+{% block content %}
+    <h1>Modifier l'Utilisateur: {{ user.username }}</h1>
+
+    {% if form_error %} 
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.edit_user', user_id=user.id) }}">
+        <div>
+            <label for="username">Nom d'utilisateur (Obligatoire):</label>
+            <input type="text" id="username" name="username" value="{{ request.form.get('username') or user.username }}" required>
+        </div>
+        <div>
+            <label for="email">Email (Obligatoire):</label>
+            <input type="email" id="email" name="email" value="{{ request.form.get('email') or user.email }}" required>
+        </div>
+        <div>
+            <label for="password">Nouveau mot de passe (laisser vide pour ne pas changer):</label>
+            <input type="password" id="password" name="password">
+        </div>
+        <div>
+            <label for="role">Rôle (Obligatoire):</label>
+            <select id="role" name="role" required>
+                {% for key, value in roles.items() %}
+                    <option value="{{ key }}" {% if (request.form.get('role') or user.role) == key %}selected{% endif %}>{{ value }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div id="client-initial-select-div" style="display: none;">
+            <label for="id_client_initial">Client Initial Associé (Obligatoire si rôle Client):</label>
+            <select id="id_client_initial" name="id_client_initial">
+                <option value="">-- Sélectionnez un Client Initial --</option>
+                {% if clients_initial %}
+                    {% for ci in clients_initial %}
+                        <option value="{{ ci.id_client_initial }}" 
+                                {% if (request.form.get('id_client_initial') and request.form.get('id_client_initial')|int == ci.id_client_initial) or (user.id_client_initial and user.id_client_initial == ci.id_client_initial) %}selected{% endif %}>
+                            {{ ci.nom }} {{ ci.prenom or '' }} (ID: {{ ci.id_client_initial }})
+                        </option>
+                    {% endfor %}
+                {% else %}
+                    <option value="" disabled>Aucun Client Initial disponible</option>
+                {% endif %}
+            </select>
+            {% if not clients_initial %}
+                 <p style="color: #777; font-style: italic;">
+                    (Aucun Client Initial n'est actuellement enregistré. Vous devrez en <a href="{{ url_for('main.add_client_initial') }}">créer un</a> avant de pouvoir l'associer.)
+                </p>
+            {% endif %}
+        </div>
+
+        <div id="chauffeur-select-div" style="display: none;">
+            <label for="id_chauffeur">Chauffeur Associé (Obligatoire si rôle Chauffeur):</label>
+            <select id="id_chauffeur" name="id_chauffeur">
+                <option value="">-- Sélectionnez un Chauffeur --</option>
+                {% if chauffeurs %}
+                    {% for ch in chauffeurs %}
+                        <option value="{{ ch.id_chauffeur }}" 
+                                {% if (request.form.get('id_chauffeur') and request.form.get('id_chauffeur')|int == ch.id_chauffeur) or (user.id_chauffeur and user.id_chauffeur == ch.id_chauffeur) %}selected{% endif %}>
+                            {{ ch.nom_complet }} (ID: {{ ch.id_chauffeur }})
+                        </option>
+                    {% endfor %}
+                {% else %}
+                    <option value="" disabled>Aucun Chauffeur disponible</option>
+                {% endif %}
+            </select>
+            {% if not chauffeurs %}
+                 <p style="color: #777; font-style: italic;">
+                    (Aucun Chauffeur n'est actuellement enregistré. Vous devrez en <a href="{{ url_for('main.add_chauffeur') }}">créer un</a> avant de pouvoir l'associer.)
+                </p>
+            {% endif %}
+        </div>
+
+        <div>
+            <button type="submit">Enregistrer les modifications</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_users') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à la liste</a></p>
+{% endblock %}
+
+{% block scripts_extra %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var roleSelect = document.getElementById('role');
+            var clientInitialDiv = document.getElementById('client-initial-select-div');
+            var clientInitialSelect = document.getElementById('id_client_initial');
+            var chauffeurDiv = document.getElementById('chauffeur-select-div');
+            var chauffeurSelect = document.getElementById('id_chauffeur');
+
+            // Récupérer les valeurs initiales de l'utilisateur pour pré-remplir le JS
+            // C'est important car request.form ne contient pas ces valeurs lors du premier chargement (GET)
+            const initialUserIdClient = "{{ user.id_client_initial | default('') }}";
+            const initialUserIdChauffeur = "{{ user.id_chauffeur | default('') }}";
+
+            function toggleAssociatedSelects() {
+                // Cacher les deux par défaut
+                clientInitialDiv.style.display = 'none';
+                clientInitialSelect.required = false;
+                
+                chauffeurDiv.style.display = 'none';
+                chauffeurSelect.required = false;
+
+                if (roleSelect.value === 'CLIENT') {
+                    clientInitialDiv.style.display = 'block';
+                    clientInitialSelect.required = true; 
+                    // Pré-sélectionner si une valeur initiale existe pour le rôle CLIENT
+                    if (initialUserIdClient) {
+                        clientInitialSelect.value = initialUserIdClient;
+                    } else {
+                        clientInitialSelect.value = ''; // Réinitialiser si pas de client initial
+                    }
+                } else if (roleSelect.value === 'CHAUFFEUR') {
+                    chauffeurDiv.style.display = 'block';
+                    chauffeurSelect.required = true;
+                    // Pré-sélectionner si une valeur initiale existe pour le rôle CHAUFFEUR
+                    if (initialUserIdChauffeur) {
+                        chauffeurSelect.value = initialUserIdChauffeur;
+                    } else {
+                        chauffeurSelect.value = ''; // Réinitialiser si pas de chauffeur
+                    }
+                } else { // Si le rôle n'est ni CLIENT ni CHAUFFEUR, vider les sélections
+                    clientInitialSelect.value = '';
+                    chauffeurSelect.value = '';
+                }
+            }
+            
+            if (roleSelect) {
+                roleSelect.addEventListener('change', toggleAssociatedSelects);
+                // Appel initial pour définir l'état correct au chargement de la page
+                toggleAssociatedSelects(); 
+            }
+        });
+    </script>
+{% endblock %}

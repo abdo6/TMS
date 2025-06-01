@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier Détail Commande {{ detail.id_detail_commande }} - TMS{% endblock %}
+
+{% block content %}
+    <h1>Modifier le Détail ID: {{ detail.id_detail_commande }} pour Commande: {{ entete.reference }}</h1>
+
+    {% if form_error %}
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.edit_detail_commande', entete_id=entete.id_entete_commande, detail_id=detail.id_detail_commande) }}">
+        <div>
+            <label for="quantite">Quantité (Obligatoire):</label>
+            <input type="number" id="quantite" name="quantite" min="1" value="{{ detail.quantite }}" required>
+        </div>
+        <div>
+            <label for="description_colis">Description du Colis:</label>
+            <input type="text" id="description_colis" name="description_colis" value="{{ detail.description_colis or '' }}">
+        </div>
+        <div>
+            <label for="volume">Volume (m³):</label>
+            <input type="number" step="0.01" id="volume" name="volume" value="{{ detail.volume or '' }}">
+        </div>
+        <div>
+            <label for="poids">Poids (kg):</label>
+            <input type="number" step="0.01" id="poids" name="poids" value="{{ detail.poids or '' }}">
+        </div>
+        <div>
+            <label for="id_type_vehicule">Type de Véhicule Requis (Obligatoire):</label>
+            <select id="id_type_vehicule" name="id_type_vehicule" required>
+                 <option value="">-- Sélectionnez un type --</option>
+                {% for type_v in types_vehicule %}
+                    <option value="{{ type_v.id_type_vehicule }}"
+                            {% if type_v.id_type_vehicule == detail.id_type_vehicule %}selected{% endif %}>
+                        {{ type_v.nom_type }}
+                    </option>
+                {% endfor %}
+            </select>
+            {% if not types_vehicule %}
+                 <p style="color: red;">Aucun type de véhicule disponible. Veuillez en <a href="{{ url_for('main.add_type_vehicule') }}">ajouter un</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <label for="id_client_final">Client Final (Obligatoire):</label>
+            <select id="id_client_final" name="id_client_final" required>
+                <option value="">-- Sélectionnez un client final --</option>
+                {% for client_f in clients_final %}
+                    <option value="{{ client_f.id_client_final }}"
+                            {% if client_f.id_client_final == detail.id_client_final %}selected{% endif %}>
+                        {{ client_f.nom }} {{ client_f.prenom if client_f.prenom else '' }} (Client Initial: {{ client_f.client_initial.nom if client_f.client_initial else 'N/A' }})
+                    </option>
+                {% endfor %}
+            </select>
+            {% if not clients_final %}
+                 <p style="color: red;">Aucun client final disponible. Veuillez en <a href="{{ url_for('main.add_client_final') }}">ajouter un</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <label for="id_destination">Destination de Livraison (Obligatoire):</label>
+            <select id="id_destination" name="id_destination" required>
+                <option value="">-- Sélectionnez une destination --</option>
+                {% for dest in destinations %}
+                    <option value="{{ dest.id_destination }}"
+                            {% if dest.id_destination == detail.id_destination %}selected{% endif %}>
+                        {{ dest.description }} ({{ dest.ville.nom_ville if dest.ville else 'N/A' }})
+                    </option>
+                {% endfor %}
+            </select>
+            {% if not destinations %}
+                 <p style="color: red;">Aucune destination disponible. Veuillez en <a href="{{ url_for('main.add_destination') }}">ajouter une</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <button type="submit">Enregistrer les modifications</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_details_commande', entete_id=entete.id_entete_commande) }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour aux détails</a></p>
+{% endblock %}

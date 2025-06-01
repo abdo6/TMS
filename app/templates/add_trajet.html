@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Ajouter Trajet - TMS{% endblock %}
+
+{% block content %}
+    <h1>Ajouter un Nouveau Trajet</h1>
+
+    {% if form_error %}
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.add_trajet') }}">
+        <div>
+            <label for="description">Description du trajet:</label>
+            <input type="text" id="description" name="description" value="{{ request.form.get('description') or description or '' }}">
+        </div>
+        <div>
+            <label for="distance_km">Distance (km):</label>
+            <input type="number" step="0.01" id="distance_km" name="distance_km" value="{{ request.form.get('distance_km') or distance_km or '' }}">
+        </div>
+        <div>
+            <label for="duree_heures">Durée (heures):</label>
+            <input type="number" step="0.01" id="duree_heures" name="duree_heures" value="{{ request.form.get('duree_heures') or duree_heures or '' }}">
+        </div>
+        <div>
+            <label for="id_destination">Destination Finale (Obligatoire):</label>
+            <select id="id_destination" name="id_destination" required>
+                <option value="">-- Sélectionnez une destination --</option>
+                {% if destinations %}
+                    {% for dest in destinations %}
+                        <option value="{{ dest.id_destination }}"
+                                {% if (request.form.get('id_destination') and request.form.get('id_destination')|int == dest.id_destination) or (id_destination and id_destination|int == dest.id_destination) %}selected{% endif %}>
+                            {{ dest.description }} ({{ dest.ville.nom_ville if dest.ville else 'N/A' }})
+                        </option>
+                    {% endfor %}
+                {% else %}
+                    <option value="" disabled>Aucune destination disponible</option>
+                {% endif %}
+            </select>
+            {% if not destinations %}
+                <p style="color: red;">Veuillez d'abord <a href="{{ url_for('main.add_destination') }}">ajouter une Destination</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <button type="submit" {% if not destinations %}disabled{% endif %}>Ajouter Trajet</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_trajets') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à la liste</a></p>
+{% endblock %}

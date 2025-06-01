@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/           # Indique à Git d'ignorer le dossier de l'environnement virtuel
+
+# IDEs and OS
+.vscode/        # Configuration de VS Code pour ce projet
+.DS_Store       # Fichiers spécifiques à macOS
+Thumbs.db       # Fichiers spécifiques à Windows

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Ajouter Ville - TMS{% endblock %}
+
+{% block content %}
+    <h1>Ajouter une Nouvelle Ville</h1>
+
+    {% if form_error %} {# Assurez-vous que vos routes passent 'form_error' si nécessaire #}
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.add_ville') }}">
+        <div>
+            <label for="code_ville">Code Ville (Obligatoire):</label>
+            <input type="text" id="code_ville" name="code_ville" value="{{ request.form.get('code_ville') or '' }}" required>
+        </div>
+        <div>
+            <label for="nom_ville">Nom Ville (Obligatoire):</label>
+            <input type="text" id="nom_ville" name="nom_ville" value="{{ request.form.get('nom_ville') or '' }}" required>
+        </div>
+        <div>
+            <button type="submit">Ajouter Ville</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_villes') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à la liste</a></p>
+{% endblock %}

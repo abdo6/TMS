@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des Indisponibilités Véhicule - TMS{% endblock %}
+
+{% block content %}
+    <h1>Liste des Indisponibilités Véhicule</h1>
+
+    <p><a href="{{ url_for('main.add_indispo_vehicule') }}" class="action-link">Ajouter une Indisponibilité Véhicule</a></p>
+
+    {% if indispos %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Véhicule</th>
+                    <th>Type Indisponibilité</th>
+                    <th>Date Début</th>
+                    <th>Date Fin</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for indispo in indispos %}
+                <tr>
+                    <td>{{ indispo.id_indispo_vehicule }}</td>
+                    <td>{{ indispo.vehicule.immatriculation_ve if indispo.vehicule else 'N/A' }}</td>
+                    <td>{{ indispo.type_indispo_vehicule.nom_type if indispo.type_indispo_vehicule else 'N/A' }}</td>
+                    <td>{{ indispo.date_debut.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ indispo.date_fin.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ indispo.description if indispo.description else 'N/A' }}</td>
+                    <td>
+                        <a href="{{ url_for('main.edit_indispo_vehicule', indispo_id=indispo.id_indispo_vehicule) }}" class="action-link" style="background-color: #ffc107; border-color: #ffc107; color: #212529;">Modifier</a>
+                        <a href="{{ url_for('main.delete_indispo_vehicule', indispo_id=indispo.id_indispo_vehicule) }}" 
+                           class="action-link delete-link" 
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette indisponibilité ?');">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucune indisponibilité véhicule enregistrée pour le moment.</p>
+    {% endif %}
+{% endblock %}

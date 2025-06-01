@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier Entête Commande {{ entete.reference }} - TMS{% endblock %}
+
+{% block content %}
+    <h1>Modifier l'Entête de Commande: {{ entete.reference }}</h1>
+
+    {% if form_error %}
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.edit_entete_commande', entete_id=entete.id_entete_commande) }}">
+        <div>
+            <label for="reference">Référence de Commande (Obligatoire):</label>
+            <input type="text" id="reference" name="reference" value="{{ entete.reference }}" required>
+        </div>
+        <div>
+            <label for="id_client_initial">Client Initial (Obligatoire):</label>
+            <select id="id_client_initial" name="id_client_initial" required>
+                <option value="">-- Sélectionnez un client initial --</option>
+                {% for client in clients_initial %}
+                    <option value="{{ client.id_client_initial }}" 
+                            {% if client.id_client_initial == entete.id_client_initial %}selected{% endif %}>
+                        {{ client.nom }} {{ client.prenom if client.prenom else '' }}
+                    </option>
+                {% endfor %}
+            </select>
+            {% if not clients_initial %}
+                 <p style="color: red;">Aucun client initial disponible. Veuillez en <a href="{{ url_for('main.add_client_initial') }}">ajouter un</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <label for="id_service">Service Client (Obligatoire):</label>
+            <select id="id_service" name="id_service" required>
+                <option value="">-- Sélectionnez un service client --</option>
+                {% for service in services_clients %}
+                    <option value="{{ service.id_service }}" 
+                            {% if service.id_service == entete.id_service %}selected{% endif %}>
+                        {{ service.nom_service }} ({{ service.client_initial.nom if service.client_initial else '' }})
+                    </option>
+                {% endfor %}
+            </select>
+            {% if not services_clients %}
+                 <p style="color: red;">Aucun service client disponible. Veuillez en <a href="{{ url_for('main.add_service_client') }}">ajouter un</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <label>Date de Commande:</label>
+            <p>{{ entete.date_commande.strftime('%d/%m/%Y') }} (Non modifiable)</p>
+        </div>
+        <div>
+            <button type="submit">Enregistrer les modifications</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_entetes_commande') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à la liste</a></p>
+{% endblock %}

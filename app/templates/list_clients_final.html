@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des Clients Finaux - TMS{% endblock %}
+
+{% block content %}
+    <h1>Liste des Clients Finaux</h1>
+
+    <p><a href="{{ url_for('main.add_client_final') }}" class="action-link">Ajouter un nouveau Client Final</a></p>
+
+    {% if clients %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Email</th>
+                    <th>Téléphone</th>
+                    <th>Adresse</th>
+                    <th>Client Initial</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for client in clients %}
+                <tr>
+                    <td>{{ client.id_client_final }}</td>
+                    <td>{{ client.nom }}</td>
+                    <td>{{ client.prenom if client.prenom else 'N/A' }}</td>
+                    <td>{{ client.email if client.email else 'N/A' }}</td>
+                    <td>{{ client.numero_telephone if client.numero_telephone else 'N/A' }}</td>
+                    <td>{{ client.adresse if client.adresse else 'N/A' }}</td>
+                    <td>{{ client.client_initial.nom if client.client_initial else 'N/A' }}</td>
+                    <td>
+                        <a href="{{ url_for('main.edit_client_final', client_id=client.id_client_final) }}" class="action-link" style="background-color: #ffc107; border-color: #ffc107; color: #212529;">Modifier</a>
+                        <a href="{{ url_for('main.delete_client_final', client_id=client.id_client_final) }}"
+                           class="action-link delete-link"
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce client final ?');">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucun client final enregistré pour le moment.</p>
+    {% endif %}
+{% endblock %}

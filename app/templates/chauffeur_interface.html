@@ -1,0 +1,360 @@
+{# app/templates/chauffeur_interface.html #}
+    {% extends "base.html" %}
+
+    {% block title %}Interface Chauffeur - {{ chauffeur.nom_complet }} - TMS{% endblock %}
+
+    {% block head_extra %}
+        <style>
+            .chauffeur-card {
+                background-color: #f8f9fa;
+                border: 1px solid #e9ecef;
+                border-radius: 8px;
+                padding: 25px;
+                text-align: center;
+                max-width: 800px; /* Augmenter la largeur pour les missions */
+                margin: 30px auto;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            }
+            .chauffeur-card h1 {
+                color: #2c3e50;
+                border-bottom: none;
+                padding-bottom: 0;
+                margin-bottom: 20px;
+            }
+            .chauffeur-card p {
+                font-size: 1.1em;
+                color: #555;
+            }
+            .location-status {
+                margin-top: 20px;
+                font-size: 1em;
+                color: #6c757d;
+                min-height: 2em; /* Pour éviter le saut de mise en page */
+            }
+            .location-button {
+                background-color: #28a745; /* Vert pour l'envoi */
+                color: white;
+                padding: 15px 30px;
+                border: none;
+                border-radius: 5px;
+                font-size: 1.2em;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+                margin-top: 20px;
+                width: 100%;
+                max-width: 300px;
+            }
+            .location-button:hover {
+                background-color: #218838;
+            }
+            .location-button:disabled {
+                background-color: #cccccc;
+                cursor: not-allowed;
+            }
+
+            /* Styles pour la liste des missions */
+            .missions-section {
+                margin-top: 40px;
+                text-align: left;
+                border-top: 1px solid #e9ecef;
+                padding-top: 20px;
+            }
+            .missions-section h2 {
+                color: #34495e;
+                font-size: 1.5em;
+                margin-bottom: 20px;
+            }
+            .mission-card {
+                background-color: #ffffff;
+                border: 1px solid #cceeff; /* Bleu clair pour les missions */
+                border-left: 5px solid #007bff;
+                border-radius: 5px;
+                padding: 15px;
+                margin-bottom: 15px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            }
+            .mission-card h3 {
+                color: #007bff;
+                margin-top: 0;
+                margin-bottom: 10px;
+                font-size: 1.2em;
+            }
+            .mission-card p {
+                margin: 5px 0;
+                font-size: 0.95em;
+                color: #333;
+            }
+            .mission-card ul {
+                list-style-type: disc;
+                padding-left: 20px;
+                margin-top: 10px;
+            }
+            .mission-card ul li {
+                margin-bottom: 5px;
+                font-size: 0.9em;
+                color: #444;
+            }
+            .mission-card ul li strong {
+                color: #0056b3;
+            }
+
+            .mission-card .status-indicator {
+                font-weight: bold;
+                padding: 3px 8px;
+                border-radius: 4px;
+                display: inline-block;
+                margin-left: 10px;
+            }
+            .status-indicator.Planifiée { background-color: #f0f0f0; color: #555; }
+            .status-indicator.En_cours { background-color: #ffc107; color: #333; }
+            .status-indicator.Terminée { background-color: #28a745; color: white; }
+            .status-indicator.Annulée { background-color: #dc3545; color: white; }
+
+            .mission-actions {
+                margin-top: 15px;
+                text-align: right;
+            }
+            .mission-actions button {
+                padding: 8px 15px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 0.9em;
+                margin-left: 10px;
+                transition: background-color 0.2s;
+            }
+            .mission-actions .btn-start { background-color: #007bff; color: white; }
+            .mission-actions .btn-start:hover { background-color: #0056b3; }
+            .mission-actions .btn-complete { background-color: #28a745; color: white; }
+            .mission-actions .btn-complete:hover { background-color: #218838; }
+            .mission-actions .btn-cancel { background-color: #6c757d; color: white; }
+            .mission-actions .btn-cancel:hover { background-color: #5a6268; }
+            .mission-actions button:disabled {
+                background-color: #cccccc;
+                cursor: not-allowed;
+            }
+        </style>
+    {% endblock %}
+
+    {% block content %}
+        <div class="chauffeur-card">
+            <h1>Bienvenue, {{ chauffeur.nom_complet }} !</h1>
+            <p>Votre ID de Chauffeur: <strong>{{ chauffeur.id_chauffeur }}</strong></p>
+            <p>Ceci est votre interface pour envoyer votre position GPS.</p>
+
+            <div class="location-status" id="locationStatus">
+                Veuillez activer le suivi de position.
+            </div>
+
+            <button type="button" class="location-button" id="toggleTrackingButton">
+                Activer le Suivi de Position
+            </button>
+        </div>
+
+        <div class="missions-section">
+            <h2>Vos Missions Affectées</h2>
+            {% if chauffeur_missions %}
+                {% for mission in chauffeur_missions %}
+                    <div class="mission-card" id="mission-{{ mission.id_mission }}">
+                        <h3>
+                            Mission ID: {{ mission.id_mission }} 
+                            <span class="status-indicator {{ mission.statut.replace(' ', '_') }}">{{ mission.statut }}</span>
+                        </h3>
+                        <p><strong>Période:</strong> {{ mission.date_debut.strftime('%d/%m/%Y') }} {{ mission.heure_debut.strftime('%H:%M') }} - {{ mission.date_fin.strftime('%d/%m/%Y') }} {{ mission.heure_fin.strftime('%H:%M') }}</p>
+                        <p><strong>Véhicule:</strong> {{ mission.vehicule.immatriculation_ve if mission.vehicule else 'N/A' }} ({{ mission.vehicule.categorie if mission.vehicule else 'N/A' }})</p>
+                        <p><strong>Feuille de Route:</strong> {{ (mission.feuille_de_route.description if mission.feuille_de_route and mission.feuille_de_route.description else 'ID: ' + mission.feuille_de_route.id_feuille_de_route|string) if mission.feuille_de_route else 'Non Affectée' }}</p>
+                        
+                        {% if mission.details_commandes %}
+                            <h4>Détails de Commande (Livraisons/Collectes):</h4>
+                            <ul>
+                            {% for detail in mission.details_commandes %}
+                                <li>
+                                    Commande: <strong>{{ detail.entete_commande.reference if detail.entete_commande else 'N/A' }}</strong> (Client: {{ detail.entete_commande.client_initial.nom if detail.entete_commande and detail.entete_commande.client_initial else 'N/A' }})<br>
+                                    Quantité: {{ detail.quantite }} ({{ detail.description_colis if detail.description_colis else 'N/A' }})<br>
+                                    Destination: {{ detail.destination.description if detail.destination else 'N/A' }} (Lat: {{ detail.destination.latitude if detail.destination else 'N/A' }}, Long: {{ detail.destination.longitude if detail.destination else 'N/A' }})<br>
+                                    Type Véhicule Requis: {{ detail.type_vehicule.nom_type if detail.type_vehicule else 'N/A' }}
+                                </li>
+                            {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>Aucun détail de commande associé à cette mission.</p>
+                        {% endif %}
+
+                        <div class="mission-actions">
+                            <button type="button" class="btn-start" data-mission-id="{{ mission.id_mission }}" data-new-status="En cours" {% if mission.statut != 'Planifiée' %}disabled{% endif %}>Démarrer Mission</button>
+                            <button type="button" class="btn-complete" data-mission-id="{{ mission.id_mission }}" data-new-status="Terminée" {% if mission.statut == 'Terminée' or mission.statut == 'Planifiée' or mission.statut == 'Annulée' %}disabled{% endif %}>Terminer Mission</button>
+                            <button type="button" class="btn-cancel" data-mission-id="{{ mission.id_mission }}" data-new-status="Annulée" {% if mission.statut == 'Terminée' or mission.statut == 'Annulée' %}disabled{% endif %}>Annuler Mission</button>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>Aucune mission n'est actuellement affectée à votre profil.</p>
+            {% endif %}
+        </div>
+    {% endblock %}
+
+    {% block scripts_extra %}
+    <script>
+        const chauffeurId = parseInt("{{ chauffeur.id_chauffeur | default('') }}") || null; 
+        const locationStatus = document.getElementById('locationStatus');
+        const toggleTrackingButton = document.getElementById('toggleTrackingButton');
+        let trackingInterval = null;
+        const intervalTime = 10000; // 10 secondes
+
+        // Fonction pour envoyer la position GPS
+        function sendLocation(latitude, longitude) {
+            fetch('/api/location', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chauffeur_id: chauffeurId, latitude: latitude, longitude: longitude }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.error || 'Erreur réseau lors de l\'envoi de la position.'); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                locationStatus.textContent = `Position envoyée (${latitude.toFixed(5)}, ${longitude.toFixed(5)}) à ${new Date().toLocaleTimeString()} (ID: ${data.location_id}).`;
+                console.log('Position envoyée avec succès:', data);
+            })
+            .catch(error => {
+                locationStatus.textContent = `Erreur: ${error.message}`;
+                console.error('Erreur lors de l\'envoi de la position:', error);
+            });
+        }
+
+        // Fonction pour obtenir la position GPS
+        function getLocation() {
+            if (navigator.geolocation) {
+                locationStatus.textContent = 'Obtention de la position...';
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        sendLocation(position.coords.latitude, position.coords.longitude);
+                    },
+                    (error) => {
+                        let errorMessage = 'Erreur d\'obtention de la position : ';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage += "Vous devez autoriser l'accès à la localisation.";
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage += "Position non disponible.";
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage += "Délai dépassé pour l'obtention de la position.";
+                                break;
+                            case error.UNKNOWN_ERROR:
+                                errorMessage += "Erreur inconnue.";
+                                break;
+                        }
+                        locationStatus.textContent = errorMessage;
+                        console.error('Geolocation Error:', error);
+                    },
+                    { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+                );
+            } else {
+                locationStatus.textContent = 'La géolocalisation n\'est pas supportée par ce navigateur.';
+            }
+        }
+
+        // Gérer le clic sur le bouton Activer/Désactiver le Suivi
+        toggleTrackingButton.addEventListener('click', function() {
+            if (trackingInterval) {
+                clearInterval(trackingInterval);
+                trackingInterval = null;
+                toggleTrackingButton.textContent = 'Activer le Suivi de Position';
+                locationStatus.textContent = 'Suivi de position désactivé.';
+                toggleTrackingButton.style.backgroundColor = '#28a745'; // Vert
+            } else {
+                getLocation(); // Envoyer une position immédiatement
+                trackingInterval = setInterval(getLocation, intervalTime); // Puis toutes les X secondes
+                toggleTrackingButton.textContent = 'Désactiver le Suivi de Position';
+                locationStatus.textContent = `Suivi de position activé (envoi toutes les ${intervalTime / 1000}s)...`;
+                toggleTrackingButton.style.backgroundColor = '#dc3545'; // Rouge
+            }
+        });
+
+        // Arrêter le suivi si la page est fermée
+        window.addEventListener('beforeunload', function() {
+            if (trackingInterval) {
+                clearInterval(trackingInterval);
+            }
+        });
+
+        // --- NOUVEAU CODE POUR LES BOUTONS DE STATUT DE MISSION ---
+        document.querySelectorAll('.mission-actions button').forEach(button => {
+            button.addEventListener('click', function() {
+                const missionId = this.dataset.missionId; // Récupère l'ID de mission du bouton (attribut data-mission-id)
+                const newStatus = this.dataset.newStatus; // Récupère le nouveau statut du bouton (attribut data-new-status)
+
+                // Demander confirmation avant d'envoyer la requête
+                if (confirm(`Voulez-vous vraiment changer le statut de la mission ID ${missionId} à "${newStatus}" ?`)) {
+                    fetch(`/api/mission/${missionId}/status`, { // Appel à l'API via fetch
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ status: newStatus }), // Envoyez le nouveau statut dans le corps JSON
+                    })
+                    .then(response => {
+                        if (!response.ok) { // Gérer les erreurs HTTP (ex: 404, 500)
+                            return response.json().then(err => { throw new Error(err.error || 'Erreur inconnue'); });
+                        }
+                        return response.json(); // La réponse est du JSON
+                    })
+                    .then(data => {
+                        alert(data.message); // Afficher le message de succès de l'API
+                        // Mettre à jour l'affichage de la mission dans l'interface sans recharger la page
+                        const missionCard = document.getElementById(`mission-${missionId}`);
+                        if (missionCard) {
+                            const statusSpan = missionCard.querySelector('.status-indicator');
+                            if (statusSpan) {
+                                statusSpan.textContent = newStatus; // Met à jour le texte du statut
+                                // Met à jour la classe CSS pour changer la couleur
+                                statusSpan.className = `status-indicator ${newStatus.replace(' ', '_')}`;
+                            }
+                            // Mettre à jour l'état activé/désactivé des boutons
+                            updateMissionButtons(missionCard, newStatus);
+                        }
+                    })
+                    .catch(error => {
+                        alert(`Échec de la mise à jour du statut: ${error.message}`); // Afficher les erreurs
+                        console.error('Erreur lors de la mise à jour du statut:', error);
+                    });
+                }
+            });
+        });
+
+        // Fonction pour activer/désactiver les boutons en fonction du statut actuel
+        function updateMissionButtons(missionCard, currentStatus) {
+            const startButton = missionCard.querySelector('.btn-start');
+            const completeButton = missionCard.querySelector('.btn-complete');
+            const cancelButton = missionCard.querySelector('.btn-cancel');
+
+            // Logique pour activer/désactiver les boutons:
+            // Démarrer: seulement si 'Planifiée'
+            if (startButton) {
+                startButton.disabled = (currentStatus !== 'Planifiée');
+            }
+            // Terminer: seulement si 'En cours'
+            if (completeButton) {
+                completeButton.disabled = (currentStatus !== 'En cours');
+            }
+            // Annuler: si 'Planifiée' ou 'En cours' (pas si déjà 'Terminée' ou 'Annulée')
+            if (cancelButton) {
+                cancelButton.disabled = (currentStatus === 'Terminée' || currentStatus === 'Annulée');
+            }
+        }
+
+        // Appeler updateMissionButtons pour chaque mission au chargement de la page
+        document.querySelectorAll('.mission-card').forEach(missionCard => {
+            const statusSpan = missionCard.querySelector('.status-indicator');
+            if (statusSpan) {
+                const currentStatus = statusSpan.textContent;
+                updateMissionButtons(missionCard, currentStatus);
+            }
+        });
+
+    </script>
+{% endblock %}

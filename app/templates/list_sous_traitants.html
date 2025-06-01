@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des Sous-traitants - TMS{% endblock %}
+
+{% block content %}
+    <h1>Liste des Sous-traitants</h1>
+
+    <p><a href="{{ url_for('main.add_sous_traitant') }}" class="action-link">Ajouter un nouveau Sous-traitant</a></p>
+
+    {% if sous_traitants %}
+        <div style="overflow-x:auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom Entreprise</th>
+                    <th>Contact</th>
+                    <th>Téléphone</th>
+                    <th>Email</th>
+                    <th>Adresse</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for st in sous_traitants %}
+                <tr>
+                    <td>{{ st.id_sous_traitant }}</td>
+                    <td>{{ st.nom_entreprise }}</td>
+                    <td>{{ st.contact_personne if st.contact_personne else 'N/A' }}</td>
+                    <td>{{ st.numero_telephone if st.numero_telephone else 'N/A' }}</td>
+                    <td>{{ st.email if st.email else 'N/A' }}</td>
+                    <td title="{{ st.adresse }}">{{ st.adresse[:50] if st.adresse else 'N/A' }}{% if st.adresse and st.adresse|length > 50 %}...{% endif %}</td>
+                    <td>
+                        <a href="{{ url_for('main.edit_sous_traitant', st_id=st.id_sous_traitant) }}" class="action-link" style="background-color: #ffc107; border-color: #ffc107; color: #212529;">Modifier</a>
+                        <a href="{{ url_for('main.delete_sous_traitant', st_id=st.id_sous_traitant) }}" 
+                           class="action-link delete-link" 
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce sous-traitant ?');">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    {% else %}
+        <p>Aucun sous-traitant enregistré pour le moment.</p>
+    {% endif %}
+{% endblock %}

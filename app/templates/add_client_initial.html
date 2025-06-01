@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Ajouter Client Initial - TMS{% endblock %}
+
+{% block content %}
+    <h1>Ajouter un Nouveau Client Initial</h1>
+
+    {% if form_error %}
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.add_client_initial') }}">
+        <div>
+            <label for="nom">Nom (Obligatoire):</label>
+            <input type="text" id="nom" name="nom" value="{{ request.form.get('nom') or nom or '' }}" required>
+        </div>
+        <div>
+            <label for="prenom">Prénom:</label>
+            <input type="text" id="prenom" name="prenom" value="{{ request.form.get('prenom') or prenom or '' }}">
+        </div>
+        <div>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="{{ request.form.get('email') or email or '' }}">
+        </div>
+        <div>
+            <label for="numero_telephone">Téléphone:</label>
+            <input type="tel" id="numero_telephone" name="numero_telephone" value="{{ request.form.get('numero_telephone') or numero_telephone or '' }}">
+        </div>
+        <div>
+            <label for="adresse">Adresse:</label>
+            <input type="text" id="adresse" name="adresse" value="{{ request.form.get('adresse') or adresse or '' }}">
+        </div>
+        <div>
+            <button type="submit">Ajouter Client Initial</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_clients_initial') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à la liste</a></p>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Dates de Contrôle Véhicule - TMS{% endblock %}
+
+{% block content %}
+    <h1>Dates de Contrôle Véhicule</h1>
+
+    <p><a href="{{ url_for('main.add_date_tr') }}" class="action-link">Ajouter une Date de Contrôle Véhicule</a></p>
+
+    {% if dates_tr %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Véhicule</th>
+                    <th>Description</th>
+                    <th>Date Début</th>
+                    <th>Date Fin</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for date_t in dates_tr %}
+                <tr>
+                    <td>{{ date_t.id_date_tr }}</td>
+                    <td>{{ date_t.vehicule.immatriculation_ve if date_t.vehicule else 'N/A' }}</td>
+                    <td>{{ date_t.description if date_t.description else 'N/A' }}</td>
+                    <td>{{ date_t.date_debut.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ date_t.date_fin.strftime('%d/%m/%Y') }}</td>
+                    <td>
+                        <a href="{{ url_for('main.edit_date_tr', date_id=date_t.id_date_tr) }}" class="action-link" style="background-color: #ffc107; border-color: #ffc107; color: #212529;">Modifier</a>
+                        <a href="{{ url_for('main.delete_date_tr', date_id=date_t.id_date_tr) }}" 
+                           class="action-link delete-link" 
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette date de contrôle ?');">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucune date de contrôle véhicule enregistrée pour le moment.</p>
+    {% endif %}
+{% endblock %}

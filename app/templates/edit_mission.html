@@ -1,0 +1,231 @@
+{# app/templates/edit_mission.html #}
+{% extends "base.html" %}
+
+{% block title %}Modifier Mission {{ mission.id_mission }} - TMS{% endblock %}
+
+{% block head_extra %}
+    <style>
+        .details-section {
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        .details-section h2 {
+            color: #555;
+            margin-bottom: 15px;
+        }
+        .associated-details, .available-details {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .associated-details ul, .available-details ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .associated-details li {
+            background-color: #e9f5ff; /* Bleu clair pour les détails associés */
+            border-left: 3px solid #007bff;
+            margin-bottom: 5px;
+            padding: 8px 12px;
+            border-radius: 3px;
+            display: flex;
+            flex-direction: column; /* Pour empiler les infos et l'ordre/bouton */
+            align-items: flex-start; /* Aligner les éléments à gauche */
+            gap: 5px; /* Espace entre les éléments dans le li */
+        }
+        .associated-details li span {
+            flex-grow: 1;
+        }
+        /* Style pour le champ "Ordre" */
+        .ordre-input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        .ordre-input-group label {
+            margin-bottom: 0;
+            font-size: 0.9em;
+            font-weight: normal;
+        }
+        .ordre-input-group input[type="number"] {
+            width: 70px;
+            padding: 5px;
+            font-size: 0.9em;
+            margin-bottom: 0;
+        }
+        /* Ajuster les boutons "Retirer" pour qu'ils soient sur la même ligne que l'ordre si possible */
+        .details-action-buttons {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%; /* Pour prendre toute la largeur et mieux aligner */
+            justify-content: space-between; /* Pour espacer ordre et bouton retirer */
+        }
+        .details-action-buttons form {
+            margin: 0;
+        }
+        .details-action-buttons button {
+            margin: 0;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h1>Modifier la Mission: ID {{ mission.id_mission }}</h1>
+
+    {% if form_error %}
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.edit_mission', mission_id=mission.id_mission) }}" id="mission-form"> {# <--- TRÈS IMPORTANT : AJOUT DE id="mission-form" ICI #}
+        <div>
+            <label for="id_chauffeur">Chauffeur (Obligatoire):</label>
+            <select id="id_chauffeur" name="id_chauffeur" required>
+                 <option value="">-- Sélectionnez un chauffeur --</option>
+                {% for chauffeur in chauffeurs %}
+                    <option value="{{ chauffeur.id_chauffeur }}" {% if chauffeur.id_chauffeur == mission.id_chauffeur %}selected{% endif %}>
+                        {{ chauffeur.nom }} {{ chauffeur.prenom }}
+                    </option>
+                {% endfor %}
+            </select>
+            {% if not chauffeurs %}
+                 <p style="color: red;">Aucun chauffeur disponible. Veuillez en <a href="{{ url_for('main.add_chauffeur') }}">ajouter un</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <label for="id_vehicule">Véhicule (Obligatoire):</label>
+            <select id="id_vehicule" name="id_vehicule" required>
+                <option value="">-- Sélectionnez un véhicule --</option>
+                {% for vehicule in vehicules %}
+                    <option value="{{ vehicule.id_vehicule }}" {% if vehicule.id_vehicule == mission.id_vehicule %}selected{% endif %}>
+                        {{ vehicule.immatriculation_ve }} ({{ vehicule.categorie }})
+                    </option>
+                {% endfor %}
+            </select>
+            {% if not vehicules %}
+                 <p style="color: red;">Aucun véhicule disponible. Veuillez en <a href="{{ url_for('main.add_vehicule') }}">ajouter un</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <label for="id_destination">Destination Principale (Optionnel):</label>
+            <select id="id_destination" name="id_destination">
+                <option value="">-- Sélectionner une Destination --</option>
+                {% for destination in destinations %}
+                    <option value="{{ destination.id_destination }}" {% if destination.id_destination == mission.id_destination %}selected{% endif %}>
+                        {{ destination.description }} (Lat: {{ destination.latitude }}, Long: {{ destination.longitude }})
+                    </option>
+                {% endfor %}
+                 {% if not destinations %}
+                    <option value="" disabled>Aucune destination disponible</option>
+                {% endif %}
+            </select>
+             {% if not destinations %}
+                 <p style="color: #777; font-style: italic;">(Aucune destination disponible. Vous pouvez <a href="{{ url_for('main.add_destination') }}">en ajouter une</a>.)</p>
+            {% endif %}
+        </div>
+        <div>
+            <label for="id_feuille_de_route">Feuille de Route (Optionnel):</label>
+            <select id="id_feuille_de_route" name="id_feuille_de_route">
+                <option value="">-- Non Affectée --</option>
+                {% for fdr in feuilles_de_route %}
+                    <option value="{{ fdr.id_feuille_de_route }}"
+                            {% if fdr.id_feuille_de_route == mission.id_feuille_de_route %}selected{% endif %}>
+                        ID: {{ fdr.id_feuille_de_route }} - {{ fdr.description if fdr.description else 'Sans description' }} (Départ: {{ fdr.date_depart_prevu.strftime('%d/%m/%Y') }})
+                    </option>
+                {% endfor %}
+                 {% if not feuilles_de_route %}
+                    <option value="" disabled>Aucune feuille de route disponible</option>
+                {% endif %}
+            </select>
+            {% if not feuilles_de_route %}
+                 <p style="color: #777; font-style: italic;">(Aucune feuille de route disponible. Vous pouvez <a href="{{ url_for('main.add_feuille_de_route') }}">en ajouter une</a>.)</p>
+            {% endif %}
+        </div>
+        <div>
+            <label for="date_debut">Date de Début (Obligatoire):</label>
+            <input type="date" id="date_debut" name="date_debut" value="{{ mission.date_debut.strftime('%Y-%m-%d') }}" required>
+        </div>
+        <div>
+            <label for="heure_debut">Heure de Début (Obligatoire):</label>
+            <input type="time" id="heure_debut" name="heure_debut" value="{{ mission.heure_debut.strftime('%H:%M') }}" required>
+        </div>
+        <div>
+            <label for="date_fin">Date de Fin (Obligatoire):</label>
+            <input type="date" id="date_fin" name="date_fin" value="{{ mission.date_fin.strftime('%Y-%m-%d') }}" required>
+        </div>
+        <div>
+            <label for="heure_fin">Heure de Fin (Obligatoire):</label>
+            <input type="time" id="heure_fin" name="heure_fin" value="{{ mission.heure_fin.strftime('%H:%M') }}" required>
+        </div>
+        <div>
+            <button type="submit">Enregistrer les modifications</button>
+        </div>
+    </form>
+
+    <div class="details-section">
+        <h2>Détails de Commande Associés</h2>
+        <div class="associated-details">
+            {% if associated_details %}
+                <ul>
+                {% for detail in associated_details %}
+                    {# Trouver l'objet MissionDetail correspondant pour obtenir l'ordre_livraison actuel #}
+                                    {# Trouver l'objet MissionDetail correspondant pour obtenir l'ordre_livraison actuel #}
+                {% set mission_detail_entry = mission.mission_details_link | selectattr('id_detail_commande', '==', detail.id_detail_commande) | first %}
+                    
+                    <li>
+                        <span>
+                            ID Détail: {{ detail.id_detail_commande }} | Réf: {{ detail.entete_commande.reference if detail.entete_commande else 'N/A' }} | Qty: {{ detail.quantite }} | Dest: {{ detail.destination.description if detail.destination else 'N/A' }}
+                        </span>
+                        <div class="details-action-buttons">
+                            <div class="ordre-input-group">
+                                <label for="ordre_livraison_{{ detail.id_detail_commande }}">Ordre:</label>
+                                <input type="number"
+                                    form="mission-form" {# Lie cet input au formulaire principal #}
+                                    name="ordre_livraison_{{ detail.id_detail_commande }}"
+                                    id="ordre_livraison_{{ detail.id_detail_commande }}"
+                                    min="1"
+                                    value="{{ mission_detail_entry.ordre_livraison if mission_detail_entry and mission_detail_entry.ordre_livraison is not none else '' }}">
+                            </div>
+
+                            <form action="{{ url_for('main.remove_detail_from_mission', mission_id=mission.id_mission, detail_id=detail.id_detail_commande) }}" method="POST" style="display:inline;">
+                                <button type="submit" class="action-link delete-link" onclick="return confirm('Voulez-vous vraiment dissocier ce détail de commande ?');" style="margin: 0; padding: 6px 10px;">Retirer</button>
+                            </form>
+                        </div>
+                    </li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <p>Aucun détail de commande n'est encore associé à cette mission.</p>
+            {% endif %}
+        </div>
+
+        <h2>Ajouter des Détails de Commande Disponibles</h2>
+        {% if available_details %}
+            <div class="available-details">
+                <form action="{{ url_for('main.add_detail_to_mission', mission_id=mission.id_mission) }}" method="POST" class="add-detail-form">
+                    <label for="detail_id_to_add">Sélectionner un détail:</label>
+                    <select id="detail_id_to_add" name="detail_id" required>
+                         <option value="">-- Sélectionnez un détail à ajouter --</option>
+                        {% for detail in available_details %}
+                            <option value="{{ detail.id_detail_commande }}">
+                                ID: {{ detail.id_detail_commande }} | Réf: {{ detail.entete_commande.reference if detail.entete_commande else 'N/A' }} | Qty: {{ detail.quantite }} | Dest: {{ detail.destination.description if detail.destination else 'N/A' }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="action-link">Ajouter à la Mission</button>
+                </form>
+            </div>
+        {% else %}
+            <p>Aucun détail de commande n'est disponible pour être ajouté.</p>
+            <p style="font-style: italic;">(Vérifiez que des commandes existent et ne sont pas déjà affectées à une autre mission).</p>
+        {% endif %}
+    </div>
+
+    <p><a href="{{ url_for('main.liste_missions') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à la liste</a></p>
+{% endblock %}

@@ -1,0 +1,153 @@
+<!-- app/templates/base.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}TMS Application{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {# Décommentez si vous utilisez Bootstrap plus tard
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    #}
+    {% block head_extra %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}"> {# <--- Modification ici #}
+    <nav class="main-nav">
+        <div class="nav-logo">
+            <a href="{{ url_for('main.index') }}">TMS APP</a>
+        </div>
+        
+<ul class="nav-links">
+    {% if current_user.is_authenticated %}
+        <li><a href="{{ url_for('main.index') }}" class="{{ 'active' if request.endpoint == 'main.index' else '' }}">Tableau de Bord</a></li>
+        
+        {% if current_user.role == 'ADMIN' %}
+            <li class="dropdown">
+                <a href="#" class="dropbtn {{ 'active' if 'user' in request.endpoint else '' }}">Admin</a>
+                 <div class="dropdown-content">
+                    <a href="{{ url_for('main.liste_users') }}">Utilisateurs</a>
+                </div>
+            </li>
+        {% endif %}
+
+        {% if current_user.role in ['RH', 'ADMIN'] %}
+            <li class="dropdown">
+                <a href="#" class="dropbtn {{ 'active' if 'chauffeur' in request.endpoint or 'date_cv' in request.endpoint or 'indispo_chauffeur' in request.endpoint else '' }}">RH</a>
+                <div class="dropdown-content">
+                    <a href="{{ url_for('main.liste_chauffeurs') }}">Chauffeurs</a>
+                    <a href="{{ url_for('main.liste_types_indispo_chauffeur') }}">Types Indispo. Chauffeur</a>
+                    <a href="{{ url_for('main.liste_indispo_chauffeur') }}">Indispo. Chauffeurs</a>
+                    <a href="{{ url_for('main.liste_dates_cv') }}">Dates CV</a>
+                </div>
+            </li>
+        {% endif %}
+
+        {% if current_user.role in ['PLANIFIER', 'ADMIN'] %}
+             <li class="dropdown">
+                <a href="#" class="dropbtn {{ 'active' if 'mission' in request.endpoint or 'feuille' in request.endpoint or 'gantt' in request.endpoint or 'map' in request.endpoint or ('affretement' in request.endpoint and request.endpoint.endswith('add_affretement')) else '' }}">Planification</a>
+                <div class="dropdown-content">
+                    <a href="{{ url_for('main.liste_missions') }}">Missions</a>
+                    <a href="{{ url_for('main.liste_feuilles_de_route') }}">Feuilles de Route</a>
+                    <a href="{{ url_for('main.liste_commandes_non_planifiees') }}">Cmds Non Planifiées</a>
+                    <a href="{{ url_for('main.map_view') }}">Carte des Missions</a>
+                    <a href="{{ url_for('main.gantt_missions') }}">Gantt des Missions</a>
+					<a href="{{ url_for('main.chauffeur_history_map') }}">Historique Trajet Chauffeur</a>
+                    <a href="{{ url_for('main.add_affretement') }}">Demander Affrètement</a>
+                </div>
+            </li>
+        {% endif %}
+        
+        {% if current_user.role in ['COMMERCIAL', 'ADMIN'] %}
+            <li class="dropdown">
+                <a href="#" class="dropbtn {{ 'active' if 'client' in request.endpoint or 'commande' in request.endpoint or 'service' in request.endpoint else '' }}">Commercial</a>
+                <div class="dropdown-content">
+                     <a href="{{ url_for('main.liste_clients_initial') }}">Clients Initiaux</a>
+                     <a href="{{ url_for('main.liste_clients_final') }}">Clients Finaux</a>
+                     <a href="{{ url_for('main.liste_service_clients') }}">Services Clients</a>
+                     <a href="{{ url_for('main.liste_entetes_commande') }}">Commandes</a>
+                </div>
+            </li>
+        {% endif %}
+
+        {% if current_user.role in ['CHARGE_EXPLOITATION', 'ADMIN'] %}
+             <li class="dropdown">
+                <a href="#" class="dropbtn {{ 'active' if ('vehicule' in request.endpoint and 'externe' not in request.endpoint and 'indispo' not in request.endpoint and 'type' not in request.endpoint.split('_')[-1]) or 'destination' in request.endpoint or 'ville' in request.endpoint or 'province' in request.endpoint or 'trajet' in request.endpoint or 'type_vehicule' in request.endpoint else '' }}">Exploitation</a>
+                <div class="dropdown-content">
+                    <a href="{{ url_for('main.liste_vehicules') }}">Véhicules Internes</a>
+                    <a href="{{ url_for('main.liste_types_vehicule') }}">Types Véhicules</a>
+                    <a href="{{ url_for('main.liste_destinations') }}">Destinations</a>
+                    <a href="{{ url_for('main.liste_villes') }}">Villes</a>
+                    <a href="{{ url_for('main.liste_provinces') }}">Provinces</a>
+                    <a href="{{ url_for('main.liste_trajets') }}">Trajets</a>
+                </div>
+            </li>
+        {% endif %}
+
+        {% if current_user.role in ['APPROVISIONNEUR', 'ADMIN'] %}
+            <li class="dropdown">
+                <a href="#" class="dropbtn {{ 'active' if 'sous_traitant' in request.endpoint or 'externe' in request.endpoint or ('affretement' in request.endpoint and not request.endpoint.endswith('add_affretement')) else '' }}">Approvisionnement</a>
+                <div class="dropdown-content">
+                    <a href="{{ url_for('main.liste_sous_traitants') }}">Sous-traitants</a>
+                    <a href="{{ url_for('main.liste_vehicules_externes') }}">Véhicules Externes</a>
+                    <a href="{{ url_for('main.liste_chauffeurs_externes') }}">Chauffeurs Externes</a>
+                    <a href="{{ url_for('main.liste_affretements') }}">Affrètements</a>
+                </div>
+            </li>
+        {% endif %}
+
+        {% if current_user.role in ['CHARGE_MAINTENANCE', 'ADMIN'] %}
+             <li class="dropdown">
+                <a href="#" class="dropbtn {{ 'active' if 'indispo_vehicule' in request.endpoint or 'date_tr' in request.endpoint else '' }}">Maintenance</a>
+                <div class="dropdown-content">
+                    <a href="{{ url_for('main.liste_types_indispo_vehicule') }}">Types Indispo. Véhicule</a>
+                    <a href="{{ url_for('main.liste_indispo_vehicule') }}">Indispo. Véhicules</a>
+                    <a href="{{ url_for('main.liste_dates_tr') }}">Dates Contrôle Véhicule</a>
+                </div>
+            </li>
+        {% endif %}
+        
+        {% if current_user.role == 'CLIENT' %}
+            <li><a href="{{ url_for('main.client_dashboard') }}" class="{{ 'active' if 'client_' in request.endpoint else '' }}">Mon Espace Client</a></li>
+        {% endif %}
+
+        {% if current_user.role == 'CHAUFFEUR' %} {# <--- NOUVELLE ENTRÉE POUR LE RÔLE CHAUFFEUR #}
+            <li><a href="{{ url_for('main.chauffeur_interface') }}" class="{{ 'active' if 'chauffeur_interface' in request.endpoint else '' }}">Mon Interface Chauffeur</a></li>
+        {% endif %}
+
+        <li class="nav-user-info">
+            <span>{{ current_user.username }} ({{ ROLES.get(current_user.role, current_user.role) }})</span>
+            <a href="{{ url_for('auth.logout') }}" class="logout-button">Déconnexion</a>
+        </li>
+    {% else %}
+        <li><a href="{{ url_for('auth.login') }}" class="{{ 'active' if request.endpoint == 'auth.login' else '' }}">Connexion</a></li>
+    {% endif %}
+
+
+        </ul>
+    </nav>
+
+    <div class="container">
+        {# Les messages flash généraux s'affichent ici #}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+                    {% for category, message in messages %}
+                        <li class="flash-message {{ category }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer>
+        <p>© {{ current_year }} TMS Application Projet Industriel. OUMASSAOUD Ismail & EL GHABAOUI Abdelfettah.</p>
+    </footer>
+
+    {# Décommentez si vous utilisez Bootstrap JS plus tard
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    #}
+    {% block scripts_extra %}{% endblock %}
+</body>
+</html>

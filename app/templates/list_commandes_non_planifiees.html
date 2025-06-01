@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Commandes Non Planifiées - TMS{% endblock %}
+
+{% block content %}
+    <h1>Commandes Non Planifiées (Détails de Commande non affectés)</h1>
+
+    {% if unassigned_details %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID Détail</th>
+                    <th>Réf. Commande</th>
+                    <th>Client Initial</th>
+                    <th>Quantité</th>
+                    <th>Description Colis</th>
+                    <th>Destination Livraison</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for detail in unassigned_details %}
+                <tr>
+                    <td>{{ detail.id_detail_commande }}</td>
+                    <td>{{ detail.entete_commande.reference if detail.entete_commande else 'N/A' }}</td>
+                    <td>{{ detail.entete_commande.client_initial.nom if detail.entete_commande and detail.entete_commande.client_initial else 'N/A' }}</td>
+                    <td>{{ detail.quantite }}</td>
+                    <td>{{ detail.description_colis if detail.description_colis else 'N/A' }}</td>
+                    <td>{{ detail.destination.description if detail.destination else 'N/A' }}</td>
+                    <td>
+                        <a href="{{ url_for('main.liste_missions_pour_affectation', detail_id=detail.id_detail_commande) }}" class="action-link">Affecter à Mission</a>
+                        {# Alternative : lien direct pour créer une nouvelle mission avec ce détail pré-sélectionné (plus complexe) #}
+                        {# <a href="{{ url_for('main.add_mission', prefill_detail_id=detail.id_detail_commande) }}" class="action-link" style="background-color: #17a2b8; border-color: #17a2b8;">Créer Mission</a> #}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Toutes les commandes ont été planifiées ! (Aucun détail de commande non affecté trouvé).</p>
+    {% endif %}
+{% endblock %}

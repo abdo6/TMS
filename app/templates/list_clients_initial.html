@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des Clients Initiaux - TMS{% endblock %}
+
+{% block head_extra %}
+    <style>
+        .search-form {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px; 
+        }
+        .search-form input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 300px; 
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h1>Liste des Clients Initiaux</h1>
+
+    <p><a href="{{ url_for('main.add_client_initial') }}" class="action-link">Ajouter un nouveau Client Initial</a></p>
+
+    <form method="GET" action="{{ url_for('main.liste_clients_initial') }}" class="search-form">
+        <label for="search">Rechercher un client:</label>
+        <input type="text" id="search" name="search" placeholder="Nom, prénom, email..." value="{{ search_query if search_query else '' }}">
+        <button type="submit" class="action-link">Rechercher</button>
+        {% if search_query %}
+            <a href="{{ url_for('main.liste_clients_initial') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Effacer</a>
+        {% endif %}
+    </form>
+
+    {% if clients %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Email</th>
+                    <th>Téléphone</th>
+                    <th>Adresse</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for client in clients %}
+                <tr>
+                    <td>{{ client.id_client_initial }}</td>
+                    <td>{{ client.nom }}</td>
+                    <td>{{ client.prenom if client.prenom else 'N/A' }}</td>
+                    <td>{{ client.email if client.email else 'N/A' }}</td>
+                    <td>{{ client.numero_telephone if client.numero_telephone else 'N/A' }}</td>
+                    <td>{{ client.adresse if client.adresse else 'N/A' }}</td>
+                    <td>
+                        <a href="{{ url_for('main.edit_client_initial', client_id=client.id_client_initial) }}" class="action-link" style="background-color: #ffc107; border-color: #ffc107; color: #212529;">Modifier</a>
+                        <a href="{{ url_for('main.delete_client_initial', client_id=client.id_client_initial) }}" 
+                           class="action-link delete-link" 
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce client initial ?');">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        {% if search_query %}
+             <p>Aucun client trouvé pour la recherche "{{ search_query }}".</p>
+        {% else %}
+            <p>Aucun client initial enregistré pour le moment.</p>
+        {% endif %}
+    {% endif %}
+{% endblock %}

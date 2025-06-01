@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Ajouter Détail Commande {{ entete.reference }} - TMS{% endblock %}
+
+{% block content %}
+    <h1>Ajouter un Nouveau Détail pour Commande: {{ entete.reference }}</h1>
+
+    {% if form_error %}
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.add_detail_commande', entete_id=entete.id_entete_commande) }}">
+        <div>
+            <label for="quantite">Quantité (Obligatoire):</label>
+            <input type="number" id="quantite" name="quantite" min="1" value="{{ request.form.get('quantite') or quantite or '' }}" required>
+        </div>
+        <div>
+            <label for="description_colis">Description du Colis:</label>
+            <input type="text" id="description_colis" name="description_colis" value="{{ request.form.get('description_colis') or description_colis or '' }}">
+        </div>
+        <div>
+            <label for="volume">Volume (m³):</label>
+            <input type="number" step="0.01" id="volume" name="volume" value="{{ request.form.get('volume') or volume or '' }}">
+        </div>
+        <div>
+            <label for="poids">Poids (kg):</label>
+            <input type="number" step="0.01" id="poids" name="poids" value="{{ request.form.get('poids') or poids or '' }}">
+        </div>
+        <div>
+            <label for="id_type_vehicule">Type de Véhicule Requis (Obligatoire):</label>
+            <select id="id_type_vehicule" name="id_type_vehicule" required>
+                <option value="">-- Sélectionnez un type --</option>
+                {% if types_vehicule %}
+                    {% for type_v in types_vehicule %}
+                        <option value="{{ type_v.id_type_vehicule }}"
+                                {% if (request.form.get('id_type_vehicule') and request.form.get('id_type_vehicule')|int == type_v.id_type_vehicule) or (id_type_vehicule and id_type_vehicule|int == type_v.id_type_vehicule) %}selected{% endif %}>
+                            {{ type_v.nom_type }}
+                        </option>
+                    {% endfor %}
+                {% else %}
+                    <option value="" disabled>Aucun type de véhicule disponible</option>
+                {% endif %}
+            </select>
+            {% if not types_vehicule %}
+                <p style="color: red;">Veuillez d'abord <a href="{{ url_for('main.add_type_vehicule') }}">ajouter un Type de Véhicule</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <label for="id_client_final">Client Final (Obligatoire):</label>
+            <select id="id_client_final" name="id_client_final" required>
+                <option value="">-- Sélectionnez un client final --</option>
+                {% if clients_final %}
+                    {% for client_f in clients_final %}
+                        <option value="{{ client_f.id_client_final }}"
+                                {% if (request.form.get('id_client_final') and request.form.get('id_client_final')|int == client_f.id_client_final) or (id_client_final and id_client_final|int == client_f.id_client_final) %}selected{% endif %}>
+                            {{ client_f.nom }} {{ client_f.prenom if client_f.prenom else '' }} (Client Initial: {{ client_f.client_initial.nom if client_f.client_initial else 'N/A' }})
+                        </option>
+                    {% endfor %}
+                {% else %}
+                     <option value="" disabled>Aucun client final disponible</option>
+                {% endif %}
+            </select>
+            {% if not clients_final %}
+                <p style="color: red;">Veuillez d'abord <a href="{{ url_for('main.add_client_final') }}">ajouter un Client Final</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <label for="id_destination">Destination de Livraison (Obligatoire):</label>
+            <select id="id_destination" name="id_destination" required>
+                <option value="">-- Sélectionnez une destination --</option>
+                {% if destinations %}
+                    {% for dest in destinations %}
+                        <option value="{{ dest.id_destination }}"
+                                {% if (request.form.get('id_destination') and request.form.get('id_destination')|int == dest.id_destination) or (id_destination and id_destination|int == dest.id_destination) %}selected{% endif %}>
+                            {{ dest.description }} ({{ dest.ville.nom_ville if dest.ville else 'N/A' }})
+                        </option>
+                    {% endfor %}
+                {% else %}
+                    <option value="" disabled>Aucune destination disponible</option>
+                {% endif %}
+            </select>
+            {% if not destinations %}
+                <p style="color: red;">Veuillez d'abord <a href="{{ url_for('main.add_destination') }}">ajouter une Destination</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <button type="submit" {% if not types_vehicule or not clients_final or not destinations %}disabled{% endif %}>Ajouter Détail de Commande</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_details_commande', entete_id=entete.id_entete_commande) }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour aux détails</a></p>
+{% endblock %}

@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}Diagramme de Gantt des Missions - TMS{% endblock %}
+
+{% block head_extra %}
+    <style>
+        /* Styles spécifiques pour le Diagramme de Gantt simplifié */
+        .gantt-container {
+            width: 95%;
+            margin: 20px auto;
+            border: 1px solid #ccc;
+            overflow-x: auto; /* Permet le défilement horizontal */
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+        }
+        .gantt-header, .gantt-row {
+            display: grid;
+            /* grid-template-columns sera défini par JS */
+            grid-auto-rows: minmax(35px, auto); /* Hauteur minimale de chaque ligne */
+            border-bottom: 1px solid #eee;
+        }
+        .gantt-header {
+            background-color: #e9ecef; /* Gris plus clair pour header */
+            font-weight: bold;
+            position: sticky;
+            top: 0; /* Pour que l'en-tête reste visible au défilement vertical interne au container */
+            z-index: 10;
+        }
+        .gantt-cell {
+            padding: 8px 5px; /* Un peu plus de padding vertical */
+            border-right: 1px solid #dee2e6; /* Bordure plus subtile */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em; /* Un peu plus petit pour plus de dates */
+            white-space: nowrap; /* Empêche le texte de passer à la ligne */
+        }
+        .gantt-header .gantt-cell {
+            justify-content: center;
+            background-color: #f8f9fa;
+        }
+        .gantt-header .gantt-cell:first-child { /* Cellule 'Ressource / Mission' */
+            background-color: #e9ecef;
+            justify-content: flex-start; /* Aligner à gauche */
+            padding-left: 10px;
+            font-size: 0.9em;
+        }
+        .gantt-row:nth-child(even) .gantt-label { /* Alternance de couleur pour les labels aussi */
+             background-color: #f8f9fa;
+        }
+        .gantt-row:hover .gantt-label, .gantt-row:hover .gantt-bar-container { /* Surbrillance de toute la ligne */
+            background-color: #e6f7ff;
+        }
+        .gantt-label {
+            padding: 8px 10px;
+            text-align: left;
+            border-right: 1px solid #dee2e6;
+            align-items: center;
+            display: flex;
+            font-weight: normal; /* Normal pour les labels de mission */
+            font-size: 0.85em;
+            color: #495057;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .gantt-bar-container { /* Conteneur pour la barre, pour la grille */
+            position: relative; /* Pour positionner la barre à l'intérieur */
+            grid-column: 2 / -1; /* S'étend sur toutes les colonnes de date */
+            display: grid; /* Utilise la même grille que l'en-tête pour aligner les barres */
+            /* grid-template-columns sera défini par JS, identique à celui du header */
+        }
+        .gantt-bar {
+            background-color: #007bff; 
+            height: 70%; /* Un peu moins haut pour de l'espace */
+            margin: auto 0; /* Centrer verticalement */
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start; /* Texte à gauche */
+            color: white;
+            font-size: 0.75em;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            padding: 0 8px; /* Padding interne */
+            box-sizing: border-box; 
+            position: relative; /* Pour le tooltip et pour le positionnement dans la grille du conteneur */
+            cursor: help; 
+        }
+        .gantt-bar .tooltip {
+            visibility: hidden;
+            width: 280px; /* Un peu plus large */
+            background-color: #343a40; /* Gris foncé bootstrap */
+            color: #fff;
+            text-align: left;
+            border-radius: 4px; /* Coins moins arrondis */
+            padding: 10px;
+            position: absolute;
+            z-index: 100;
+            bottom: 115%; /* Ajuster pour ne pas être trop loin */
+            left: 50%;
+            margin-left: -140px; 
+            opacity: 0;
+            transition: opacity 0.2s, visibility 0.2s;
+            font-size: 0.85em; /* Un peu plus grand */
+            line-height: 1.5;
+            pointer-events: none; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .gantt-bar .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%; 
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #343a40 transparent transparent transparent;
+        }
+        .gantt-bar:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h1>Diagramme de Gantt des Missions</h1>
+    <p>Visualisation simplifiée des missions sur une ligne de temps.</p>
+
+    <div class="gantt-container">
+        <div class="gantt-header" id="gantt-header">
+            <div class="gantt-cell gantt-label" style="grid-column: 1 / 2;">Mission / Ressource</div>
+            <!-- Les jours seront ajoutés ici par JS -->
+        </div>
+        <div id="gantt-body">
+            <!-- Les lignes et barres de mission seront ajoutées ici par JS -->
+        </div>
+    </div>
+    
+    {# Décommenter pour déboguer les données si nécessaire
+    <pre id="debug-data" style="background-color: #eee; padding: 10px; margin-top: 20px; white-space: pre-wrap; word-break: break-all;"></pre>
+    #}
+{% endblock %}
+
+{% block scripts_extra %}
+    <script>
+        var ganttRawData = {{ gantt_data | tojson | safe }};
+
+        function getDaysArray(start, end) {
+            let arr = [];
+            for(let dt=new Date(start); dt<=new Date(end); dt.setDate(dt.getDate()+1)){
+                arr.push(new Date(dt));
+            }
+            return arr;
+        }
+
+        function generateGanttChart() {
+            const header = document.getElementById('gantt-header');
+            const body = document.getElementById('gantt-body');
+            const ganttContainer = document.querySelector('.gantt-container');
+
+            if (!ganttRawData || ganttRawData.length === 0) {
+                body.innerHTML = '<p style="text-align: center; padding: 20px;">Aucune mission à afficher.</p>';
+                return;
+            }
+
+            let minDateOverall = new Date(ganttRawData[0].start_date);
+            let maxDateOverall = new Date(ganttRawData[0].end_date);
+
+            ganttRawData.forEach(task => {
+                const startDate = new Date(task.start_date);
+                const endDate = new Date(task.end_date);
+                if (startDate < minDateOverall) minDateOverall = startDate;
+                if (endDate > maxDateOverall) maxDateOverall = endDate;
+            });
+            
+            minDateOverall.setDate(minDateOverall.getDate() - 3); // Marge de 3 jours avant
+            maxDateOverall.setDate(maxDateOverall.getDate() + 3); // Marge de 3 jours après
+
+            const dateCellsArray = getDaysArray(minDateOverall, maxDateOverall);
+            const totalDateCells = dateCellsArray.length;
+
+            // Configurer la grille pour l'en-tête et chaque conteneur de barre
+            const gridColumnTemplate = `250px repeat(${totalDateCells}, minmax(40px, 1fr))`; // min 40px pour les cellules de date
+            header.style.gridTemplateColumns = gridColumnTemplate;
+            
+            // Remplir l'en-tête avec les dates
+            dateCellsArray.forEach((date, index) => {
+                const dateCell = document.createElement('div');
+                dateCell.classList.add('gantt-cell');
+                dateCell.textContent = date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+                // dateCell.title = date.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                header.appendChild(dateCell);
+            });
+
+            ganttRawData.forEach(task => {
+                const row = document.createElement('div');
+                row.classList.add('gantt-row');
+                row.style.gridTemplateColumns = gridColumnTemplate; // Appliquer la même grille à la ligne
+
+                const labelCell = document.createElement('div');
+                labelCell.classList.add('gantt-label');
+                labelCell.textContent = task.description_courte;
+                labelCell.title = task.description_courte; // Tooltip pour le label si trop long
+                labelCell.style.gridColumn = "1 / 2";
+                row.appendChild(labelCell);
+
+                const barContainer = document.createElement('div');
+                barContainer.classList.add('gantt-bar-container');
+                barContainer.style.gridTemplateColumns = `repeat(${totalDateCells}, minmax(40px, 1fr))`; // Grille interne pour la barre
+                
+                const taskStartDate = new Date(task.start_date);
+                const taskEndDate = new Date(task.end_date);
+
+                const startIndex = dateCellsArray.findIndex(d => d.toDateString() === taskStartDate.toDateString());
+                const endIndex = dateCellsArray.findIndex(d => d.toDateString() === taskEndDate.toDateString());
+                
+                if (startIndex !== -1 && endIndex !== -1) {
+                    const bar = document.createElement('div');
+                    bar.classList.add('gantt-bar');
+                    // Le texte de la barre peut être le nom de la mission ou une partie
+                    // bar.textContent = task.description_courte.substring(0, 20) + "..."; 
+                    
+                    bar.style.gridColumnStart = startIndex + 1; // +1 car la grille CSS est 1-indexed
+                    bar.style.gridColumnEnd = endIndex + 2;   // S'étend jusqu'AU DEBUT de la cellule suivante
+
+                    const tooltip = document.createElement('span');
+                    tooltip.classList.add('tooltip');
+                    tooltip.innerHTML = task.description_longue; // Utilise HTML pour le formatage
+                    bar.appendChild(tooltip);
+                    
+                    barContainer.appendChild(bar);
+                }
+                row.appendChild(barContainer);
+                body.appendChild(row);
+            });
+            
+            // // Pour le débogage des données
+            // const debugDataEl = document.getElementById('debug-data');
+            // if (debugDataEl) {
+            //     debugDataEl.textContent = JSON.stringify(ganttRawData, null, 2);
+            // }
+        }
+
+        document.addEventListener('DOMContentLoaded', generateGanttChart);
+    </script>
+{% endblock %}

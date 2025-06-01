@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Mon Tableau de Bord - TMS{% endblock %}
+
+{% block content %}
+    <h1>Mon Tableau de Bord Client</h1>
+
+    {% if client_data %}
+        <p>Bienvenue, <strong>{{ client_data.nom }} {{ client_data.prenom or '' }}</strong> !</p>
+        
+        <div class="dashboard-section" style="margin-top: 20px;">
+            <h2>Vos Statistiques</h2>
+            <div class="stats-grid">
+                <div class="stat-card info">
+                    <h3>Total Commandes</h3>
+                    <div class="value">{{ stats.get('total_commandes', 0) }}</div>
+                </div>
+                {# Ajoutez d'autres stats pertinentes pour le client ici #}
+            </div>
+        </div>
+
+        <div class="role-section" style="margin-top:30px;">
+            <h2>Actions Rapides</h2>
+            <a href="{{ url_for('main.client_commandes_list') }}" class="action-link">Voir Mes Commandes</a>
+            {# <a href="#" class="action-link">Suivre une Livraison</a> (Fonctionnalité future) #}
+            {# <a href="#" class="action-link">Nouvelle Demande de Commande</a> (Fonctionnalité future) #}
+        </div>
+
+    {% else %}
+        <p>Les informations de votre profil client ne sont pas complètement configurées.</p>
+        <p>Si vous pensez qu'il s'agit d'une erreur, veuillez contacter le support de l'application.</p>
+    {% endif %}
+{% endblock %}

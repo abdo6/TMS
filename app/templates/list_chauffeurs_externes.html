@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des Chauffeurs Externes - TMS{% endblock %}
+
+{% block content %}
+    <h1>Liste des Chauffeurs Externes</h1>
+
+    <p><a href="{{ url_for('main.add_chauffeur_externe') }}" class="action-link">Ajouter un nouveau Chauffeur Externe</a></p>
+
+    {% if chauffeurs_externes %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Téléphone</th>
+                    <th>Email</th>
+                    <th>Catégorie Permis</th>
+                    <th>Sous-traitant</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for chauffeur in chauffeurs_externes %}
+                <tr>
+                    <td>{{ chauffeur.id_chauffeur_externe }}</td>
+                    <td>{{ chauffeur.nom }}</td>
+                    <td>{{ chauffeur.prenom }}</td>
+                    <td>{{ chauffeur.numero_telephone if chauffeur.numero_telephone else 'N/A' }}</td>
+                    <td>{{ chauffeur.email if chauffeur.email else 'N/A' }}</td>
+                    <td>{{ chauffeur.categorie_permis if chauffeur.categorie_permis else 'N/A' }}</td>
+                    <td>{{ chauffeur.sous_traitant.nom_entreprise if chauffeur.sous_traitant else 'N/A' }}</td>
+                    <td>
+                        <a href="{{ url_for('main.edit_chauffeur_externe', chauffeur_id=chauffeur.id_chauffeur_externe) }}" class="action-link" style="background-color: #ffc107; border-color: #ffc107; color: #212529;">Modifier</a>
+                        <a href="{{ url_for('main.delete_chauffeur_externe', chauffeur_id=chauffeur.id_chauffeur_externe) }}" 
+                           class="action-link delete-link" 
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce chauffeur externe ?');">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucun chauffeur externe enregistré pour le moment.</p>
+    {% endif %}
+{% endblock %}

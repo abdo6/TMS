@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier Service Client {{ service_client.nom_service }} - TMS{% endblock %}
+
+{% block content %}
+    <h1>Modifier le Service Client: {{ service_client.nom_service }}</h1>
+
+    {% if form_error %}
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.edit_service_client', service_id=service_client.id_service) }}">
+        <div>
+            <label for="nom_service">Nom du Service (Obligatoire):</label>
+            <input type="text" id="nom_service" name="nom_service" value="{{ service_client.nom_service }}" required>
+        </div>
+        <div>
+            <label for="id_client_initial">Client Initial Associé (Obligatoire):</label>
+            <select id="id_client_initial" name="id_client_initial" required>
+                <option value="">-- Sélectionnez un client initial --</option>
+                {% for client in clients_initial %}
+                    <option value="{{ client.id_client_initial }}" 
+                            {% if client.id_client_initial == service_client.id_client_initial %}selected{% endif %}>
+                        {{ client.nom }} {{ client.prenom if client.prenom else '' }}
+                    </option>
+                {% endfor %}
+            </select>
+             {% if not clients_initial %}
+                 <p style="color: red;">Aucun client initial disponible. Veuillez en <a href="{{ url_for('main.add_client_initial') }}">ajouter un</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <button type="submit">Enregistrer les modifications</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_service_clients') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à la liste</a></p>
+{% endblock %}

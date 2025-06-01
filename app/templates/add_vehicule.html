@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Ajouter Véhicule - TMS{% endblock %}
+
+{% block content %}
+    <h1>Ajouter un Nouveau Véhicule</h1>
+
+    {% if form_error %} {# Assurez-vous que vos routes passent 'form_error' si nécessaire #}
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.add_vehicule') }}">
+        <div>
+            <label for="immatriculation_ve">Immatriculation (Obligatoire):</label>
+            <input type="text" id="immatriculation_ve" name="immatriculation_ve" value="{{ request.form.get('immatriculation_ve') or '' }}" required>
+        </div>
+        <div>
+            <label for="categorie">Catégorie (ex: Camion, Utilitaire):</label>
+            <input type="text" id="categorie" name="categorie" value="{{ request.form.get('categorie') or '' }}">
+        </div>
+        <div>
+            <button type="submit">Ajouter Véhicule</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_vehicules') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à la liste</a></p>
+{% endblock %}

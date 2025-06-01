@@ -1,0 +1,175 @@
+{# app/templates/mission_report.html #}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapport Mission {{ mission.id_mission }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fff; /* Fond blanc pour l'impression */
+        }
+        .header, .footer {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            color: #2c3e50;
+        }
+        .section {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            color: #34495e;
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 2 colonnes par défaut */
+            gap: 10px;
+        }
+        .info-grid p {
+            margin: 0;
+        }
+        .full-width {
+            grid-column: 1 / -1; /* Prend toute la largeur si besoin */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        ul li {
+            margin-bottom: 5px;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 30px;
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        /* Styles spécifiques à l'impression */
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+            }
+            .header, .footer {
+                padding: 10px 0;
+                border-bottom: 1px solid #ccc;
+            }
+            .back-link {
+                display: none; /* Cache le lien de retour en mode impression */
+            }
+            .section {
+                border: none;
+                box-shadow: none;
+                page-break-inside: avoid; /* Évite les coupures de section au milieu d'une page */
+            }
+            .info-grid {
+                display: block; /* Convertit en bloc pour l'impression pour éviter les colonnes flottantes */
+            }
+            .info-grid p {
+                padding-bottom: 5px;
+            }
+            table, th, td {
+                page-break-inside: avoid; /* Évite les coupures de tableau/cellules */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Rapport de Mission</h1>
+        <p><strong>ID Mission: {{ mission.id_mission }}</strong></p>
+    </div>
+
+    <div class="section">
+        <h2>Informations Générales</h2>
+        <div class="info-grid">
+            <p><strong>Statut:</strong> {{ mission.statut }}</p>
+            <p><strong>Période:</strong> {{ mission.date_debut.strftime('%d/%m/%Y') }} {{ mission.heure_debut.strftime('%H:%M') }} - {{ mission.date_fin.strftime('%d/%m/%Y') }} {{ mission.heure_fin.strftime('%H:%M') }}</p>
+            <p><strong>Chauffeur:</strong> {{ mission.chauffeur.nom_complet if mission.chauffeur else 'N/A' }}</p>
+            <p><strong>Véhicule:</strong> {{ mission.vehicule.immatriculation_ve if mission.vehicule else 'N/A' }} ({{ mission.vehicule.categorie if mission.vehicule else 'N/A' }})</p>
+            <p class="full-width"><strong>Feuille de Route:</strong> {{ (mission.feuille_de_route.description if mission.feuille_de_route and mission.feuille_de_route.description else 'ID: ' + mission.feuille_de_route.id_feuille_de_route|string) if mission.feuille_de_route else 'Non Affectée' }}</p>
+            <p class="full-width"><strong>Destination Principale:</strong> {{ mission.destination.description if mission.destination else 'N/A' }}</p>
+        </div>
+    </div>
+
+    {% if mission.details_commandes %}
+        <div class="section">
+            <h2>Détails des Commandes (Livraisons / Collectes)</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID Détail</th>
+                        <th>Réf. Commande</th>
+                        <th>Client Initial</th>
+                        <th>Client Final</th>
+                        <th>Destination</th>
+                        <th>Quantité</th>
+                        <th>Poids (kg)</th>
+                        <th>Volume (m³)</th>
+                        <th>Type Véhicule Requis</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for detail in mission.details_commandes %}
+                    <tr>
+                        <td>{{ detail.id_detail_commande }}</td>
+                        <td>{{ detail.entete_commande.reference if detail.entete_commande else 'N/A' }}</td>
+                        <td>{{ detail.entete_commande.client_initial.nom if detail.entete_commande and detail.entete_commande.client_initial else 'N/A' }}</td>
+                        <td>{{ detail.client_final.nom if detail.client_final else 'N/A' }}</td>
+                        <td>{{ detail.destination.description if detail.destination else 'N/A' }}</td>
+                        <td>{{ detail.quantite }}</td>
+                        <td>{{ detail.poids if detail.poids is not none else 'N/A' }}</td>
+                        <td>{{ detail.volume if detail.volume is not none else 'N/A' }}</td>
+                        <td>{{ detail.type_vehicule.nom_type if detail.type_vehicule else 'N/A' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="section">
+            <h2>Détails des Commandes (Livraisons / Collectes)</h2>
+            <p>Aucun détail de commande associé à cette mission.</p>
+        </div>
+    {% endif %}
+
+    <div class="footer">
+        <p>Généré par le Système de Gestion des Transports le {{ now().strftime('%d/%m/%Y à %H:%M') }}</p>
+    </div>
+
+    <a href="{{ url_for('main.liste_missions') }}" class="back-link">Retour à la liste des Missions</a>
+</body>
+</html>

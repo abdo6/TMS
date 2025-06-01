@@ -1,0 +1,471 @@
+/* static/css/style.css */
+
+/* Réinitialisation de base et typographie */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7f6; /* Fond général un peu plus doux */
+    color: #333;
+    line-height: 1.6;
+    font-size: 16px;
+}
+
+.container {
+    width: 90%;
+    max-width: 1300px; /* Un peu plus large pour les grands écrans */
+    margin: 25px auto; /* Plus de marge en haut/bas */
+    padding: 25px;    /* Plus de padding interne */
+    background-color: #fff;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08); /* Ombre plus subtile */
+    border-radius: 8px;
+}
+
+/* Barre de Navigation Principale */
+.main-nav {
+    background-color: #2c3e50; /* Bleu marine foncé / gris ardoise */
+    color: #ecf0f1;     /* Texte blanc cassé */
+    padding: 0 5%;      /* Pas de padding haut/bas, géré par la hauteur des éléments */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 60px; /* Hauteur minimale pour la nav */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.main-nav .nav-logo a {
+    color: #ecf0f1;
+    text-decoration: none;
+    font-size: 1.8em; /* Logo plus grand */
+    font-weight: bold;
+    letter-spacing: 1px; /* Un peu d'espacement */
+}
+
+.main-nav .nav-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    height: 100%; /* Pour que les <li> puissent s'étendre */
+}
+
+.main-nav .nav-links li {
+    margin-left: 5px; /* Moins de marge entre les éléments de premier niveau */
+    position: relative; /* Pour les dropdowns */
+    height: 100%;
+    display: flex; /* Pour aligner 'a' verticalement */
+    align-items: center;
+}
+
+.main-nav .nav-links a,
+.main-nav .dropdown .dropbtn { /* Appliquer aux liens et aux boutons de dropdown */
+    color: #ecf0f1;
+    text-decoration: none;
+    padding: 10px 15px; /* Padding plus généreux */
+    border-radius: 4px;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+    height: auto; /* S'adapte au contenu */
+    display: flex;
+    align-items: center;
+    line-height: 40px; /* Pour assurer une hauteur cliquable constante */
+}
+
+.main-nav .nav-links a:hover,
+.main-nav .dropdown:hover .dropbtn, /* Garder le parent actif au survol du dropdown */
+.main-nav .nav-links a.active, /* Pour les liens directs actifs */
+.main-nav .dropbtn.active /* Pour les dropbtn actifs */
+{
+    background-color: #3498db; /* Bleu plus vif pour l'actif/survol */
+    color: #fff;
+}
+
+
+/* Menus Déroulants */
+.main-nav .dropdown .dropbtn::after { /* Flèche pour les dropdowns */
+    content: " \25BE"; /* Flèche vers le bas plus petite */
+    font-size: 0.8em;
+    margin-left: 5px;
+}
+
+.main-nav .dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #34495e; /* Un peu plus clair que la nav bar */
+  min-width: 230px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1000;
+  top: 100%; /* Se positionne juste en dessous */
+  left: 0;
+  border-radius: 0 0 5px 5px;
+  border-top: 1px solid #4a627a; /* Ligne de séparation */
+}
+
+.main-nav .dropdown-content a {
+  color: #ecf0f1;
+  padding: 10px 15px; /* Padding pour les items du dropdown */
+  text-decoration: none;
+  display: block;
+  text-align: left;
+  border-bottom: 1px solid #2c3e50; /* Séparateur plus foncé */
+  line-height: normal; /* Rétablir line-height pour les items */
+}
+
+.main-nav .dropdown-content a:last-child {
+    border-bottom: none;
+}
+
+.main-nav .dropdown-content a:hover {
+    background-color: #3498db;
+    color: #fff;
+}
+
+.main-nav .dropdown:hover .dropdown-content {
+  display: block;
+}
+
+
+/* Infos Utilisateur et Déconnexion */
+.nav-user-info {
+    display: flex;
+    align-items: center;
+    margin-left: 25px; /* Plus d'espace avant les infos user */
+}
+.nav-user-info span {
+    margin-right: 15px;
+    font-size: 0.9em;
+    color: #bdc3c7; /* Couleur plus subtile pour le nom/rôle */
+}
+.logout-button { /* Surcharge pour le bouton de déconnexion */
+    background-color: #e74c3c !important; /* Rouge */
+    padding: 8px 12px !important;
+    line-height: normal !important; /* Rétablir line-height */
+}
+.logout-button:hover {
+    background-color: #c0392b !important; /* Rouge plus foncé */
+}
+
+
+/* Pied de Page */
+footer {
+    text-align: center;
+    padding: 20px;
+    margin-top: 40px; /* Plus d'espace avant le footer */
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    font-size: 0.85em;
+}
+footer p {
+    margin: 0;
+}
+
+/* Messages Flash */
+.flash-messages {
+    padding: 0;
+    list-style: none;
+    margin-bottom: 20px;
+}
+.flash-message {
+    padding: 12px 18px; /* Plus de padding */
+    margin-bottom: 15px;
+    border-radius: 5px;
+    font-weight: 500; /* Moins gras que 'bold' */
+    border: 1px solid transparent;
+}
+.flash-message.success { background-color: #d1e7dd; color: #0f5132; border-color: #badbcc; }
+.flash-message.danger  { background-color: #f8d7da; color: #842029; border-color: #f5c2c7; }
+.flash-message.info    { background-color: #cff4fc; color: #055160; border-color: #b6effb; }
+.flash-message.warning { background-color: #fff3cd; color: #664d03; border-color: #ffecb5; }
+
+
+/* Titres */
+h1, h2, h3 {
+    color: #2c3e50; /* Couleur des titres alignée avec la nav */
+    margin-top: 0; /* Enlever marge par défaut pour certains h1 */
+}
+h1 {
+    font-size: 2em; /* Taille h1 */
+    margin-bottom: 20px;
+    border-bottom: 2px solid #3498db; /* Soulignement bleu */
+    padding-bottom: 10px;
+}
+h2 {
+    font-size: 1.6em;
+    margin-bottom: 15px;
+}
+h3 {
+    font-size: 1.3em;
+    margin-bottom: 10px;
+}
+
+/* Liens d'action et Boutons */
+.action-link, button[type="submit"], .button-like-link { /* .button-like-link pour les 'a' stylés comme des boutons */
+    display: inline-block;
+    padding: 10px 18px; /* Padding plus généreux */
+    margin: 5px 5px 15px 0; /* Marge en bas pour espacer des éléments suivants */
+    border: 1px solid transparent;
+    border-radius: 5px; /* Coins plus arrondis */
+    text-decoration: none;
+    font-size: 1em; /* Taille de police standard pour les boutons */
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, transform 0.1s ease;
+    text-align: center;
+}
+.action-link:active, button[type="submit"]:active, .button-like-link:active {
+    transform: translateY(1px); /* Effet de clic */
+}
+
+/* Style de base pour les liens d'action (bleu par défaut) */
+.action-link {
+    background-color: #3498db;
+    color: white;
+    border-color: #3498db;
+}
+.action-link:hover {
+    background-color: #2980b9;
+    border-color: #2980b9;
+    color: white;
+}
+
+.delete-link { /* Style pour les liens/boutons de suppression */
+    background-color: #e74c3c;
+    color: white;
+    border-color: #e74c3c;
+}
+.delete-link:hover {
+    background-color: #c0392b;
+    border-color: #c0392b;
+    color: white;
+}
+
+button[type="submit"] { /* Style pour les boutons de soumission de formulaire (vert) */
+    background-color: #2ecc71;
+    color: white;
+    border-color: #2ecc71;
+}
+button[type="submit"]:hover {
+    background-color: #27ae60;
+    border-color: #27ae60;
+    color: white;
+}
+button[type="submit"]:disabled {
+    background-color: #bdc3c7;
+    border-color: #bdc3c7;
+    cursor: not-allowed;
+}
+
+/* Style pour les Tableaux */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border-radius: 5px; /* Coins arrondis pour le tableau */
+    overflow: hidden; /* Pour que border-radius s'applique aux coins */
+}
+th, td {
+    border: 1px solid #e0e0e0;
+    padding: 12px 15px;
+    text-align: left;
+    vertical-align: middle;
+}
+th {
+    background-color: #f0f2f5; /* Fond d'en-tête plus clair */
+    font-weight: 600; /* En-têtes un peu plus gras */
+    color: #495057;
+    text-transform: capitalize; /* Majuscule au début de chaque mot */
+}
+tr:nth-child(even) {
+    background-color: #f9fafb; /* Alternance de couleur très subtile */
+}
+tr:hover {
+    background-color: #e9ecef; /* Survol plus visible */
+}
+td .action-link, td .delete-link { /* Ajuster les marges pour les boutons dans les cellules */
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 6px 10px; /* Boutons plus petits dans les tableaux */
+    font-size: 0.85em;
+}
+
+
+/* Style pour les Formulaires */
+form div {
+    margin-bottom: 18px; /* Plus d'espace entre les champs */
+}
+form label {
+    display: block;
+    margin-bottom: 6px; /* Espace entre label et input */
+    font-weight: 500;
+    color: #495057;
+}
+form input[type="text"],
+form input[type="email"],
+form input[type="password"],
+form input[type="tel"],
+form input[type="date"],
+form input[type="time"],
+form input[type="number"],
+form textarea,
+form select {
+    width: 100%; /* Prend toute la largeur disponible */
+    padding: 10px 12px; /* Padding interne confortable */
+    border: 1px solid #ced4da; /* Bordure standard */
+    border-radius: 4px;
+    font-size: 0.95em;
+    box-sizing: border-box; /* Important pour que padding+border ne dépassent pas width */
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+form input:focus, form textarea:focus, form select:focus {
+    border-color: #80bdff; /* Bordure bleue au focus */
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+form textarea {
+    min-height: 100px; /* Hauteur minimale pour textarea */
+    resize: vertical;
+}
+form select {
+    appearance: none; /* Enlever le style par défaut du select pour certains navigateurs */
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007bff%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22/%3E%3C/svg%3E');
+    background-repeat: no-repeat;
+    background-position: right .75rem center;
+    background-size: .65em auto;
+    padding-right: 2.5rem; /* Espace pour la flèche */
+}
+
+/* Classe pour les pages spéciales comme login */
+body.login-page {
+    background-color: #e9ecef; /* Fond différent */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding-top: 0; /* Annuler le padding du container global si besoin */
+}
+.login-page .main-nav, .login-page footer {
+    display: none; /* Cacher nav et footer sur la page de login */
+}
+/* Le .container de base.html sera utilisé, mais il faut peut-être des ajustements */
+.login-page .container {
+    padding: 0;
+    background-color: transparent;
+    box-shadow: none;
+    width: auto; /* Permettre au login-container de définir sa propre largeur */
+    max-width: none;
+}
+.login-container { /* Style spécifique pour le bloc de connexion */
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+}
+.login-container h1 {
+    margin-bottom: 30px;
+    font-size: 2em;
+}
+.login-container .form-group input {
+    padding: 12px 15px;
+}
+.login-container button[type="submit"] {
+    padding: 12px 20px;
+    font-size: 1.1em;
+}
+
+/* Classes utilitaires pour le texte */
+.text-danger { color: #dc3545; }
+.text-warning { color: #ffc107; }
+.text-info { color: #17a2b8; }
+.text-muted { color: #6c757d; }
+.font-italic { font-style: italic; }
+
+/* Styles spécifiques pour la recherche dans les listes */
+.search-form {
+    margin-bottom: 25px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 5px;
+    display: flex;
+    flex-wrap: wrap; 
+    align-items: flex-end; 
+    gap: 15px; 
+}
+.search-group {
+    display: flex;
+    flex-direction: column; 
+    gap: 5px;
+    flex: 1 1 200px; /* Permet aux groupes de s'adapter */
+}
+.search-form label {
+    font-size: 0.9em;
+    font-weight: 500;
+    color: #495057;
+}
+.search-form input[type="text"],
+.search-form input[type="date"],
+.search-form select { /* Inclure les selects si utilisés dans les filtres */
+    padding: 8px 10px; /* Un peu moins de padding pour les champs de recherche */
+    font-size: 0.9em;
+}
+.search-form button.action-link { /* Style pour le bouton rechercher */
+    padding: 8px 15px; /* Taille cohérente avec les inputs */
+    align-self: flex-end; /* S'aligne avec le bas des inputs */
+    flex-basis: auto; /* Ne pas grandir plus que nécessaire */
+}
+/* Styles spécifiques pour les statuts de mission */
+.mission-status-indicator {
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.mission-status-Planifiée {
+    background-color: #e0f2f7; /* Bleu très clair */
+    color: #2196f3; /* Bleu standard */
+    border: 1px solid #90caf9;
+}
+.mission-status-En_cours {
+    background-color: #fff3e0; /* Orange très clair */
+    color: #ff9800; /* Orange standard */
+    border: 1px solid #ffcc80;
+}
+.mission-status-Terminée {
+    background-color: #e8f5e9; /* Vert très clair */
+    color: #4caf50; /* Vert standard */
+    border: 1px solid #a5d6a7;
+}
+.mission-status-Annulée {
+    background-color: #ffebee; /* Rouge très clair */
+    color: #f44336; /* Rouge standard */
+    border: 1px solid #ef9a9a;
+}
+/* Styles pour les alertes de validité dans le tableau de bord */
+.alert-item {
+    font-weight: bold;
+    margin-bottom: 5px; /* Espace entre les alertes */
+    list-style: none; /* Pas de puce par défaut sur le li */
+}
+
+.alert-item-description {
+    font-style: italic;
+    display: block; /* Pour que cela apparaisse sur une nouvelle ligne */
+    font-weight: normal;
+    font-size: 0.9em;
+}
+
+.alert-expired {
+    color: #dc3545; /* Rouge pour expiré */
+}
+
+.alert-expiring-soon {
+    color: #ff9800; /* Orange pour expire bientôt */
+}

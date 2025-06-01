@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Mes Commandes - TMS{% endblock %}
+
+{% block content %}
+    <h1>Mes Commandes</h1>
+    
+    {% if client_data %}
+        <p>Liste des commandes pour <strong>{{ client_data.nom }} {{ client_data.prenom or '' }}</strong>.</p>
+    {% endif %}
+
+    {% if commandes %}
+        <div style="overflow-x:auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Référence</th>
+                    <th>Date Commande</th>
+                    <th>Service</th>
+                    <th>Nb. Détails</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for commande in commandes %}
+                <tr>
+                    <td>{{ commande.reference }}</td>
+                    <td>{{ commande.date_commande.strftime('%d/%m/%Y') }}</td>
+                    <td>{{ commande.service_client.nom_service if commande.service_client else 'N/A' }}</td>
+                    <td>{{ commande.details_commandes_rel|length }}</td>
+                    <td>
+                        <a href="{{ url_for('main.client_commande_details', entete_id=commande.id_entete_commande) }}" class="action-link" style="background-color: #17a2b8; border-color: #17a2b8;">Voir Détails</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    {% else %}
+        <p>Vous n'avez aucune commande enregistrée pour le moment.</p>
+    {% endif %}
+    <p style="margin-top: 20px;"><a href="{{ url_for('main.client_dashboard') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour au Tableau de Bord</a></p>
+{% endblock %}

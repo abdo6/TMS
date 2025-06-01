@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Ajouter Client Final - TMS{% endblock %}
+
+{% block content %}
+    <h1>Ajouter un Nouveau Client Final</h1>
+
+    {% if form_error %}
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.add_client_final') }}">
+        <div>
+            <label for="nom">Nom (Obligatoire):</label>
+            <input type="text" id="nom" name="nom" value="{{ request.form.get('nom') or nom or '' }}" required>
+        </div>
+        <div>
+            <label for="prenom">Prénom:</label>
+            <input type="text" id="prenom" name="prenom" value="{{ request.form.get('prenom') or prenom or '' }}">
+        </div>
+        <div>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="{{ request.form.get('email') or email or '' }}">
+        </div>
+        <div>
+            <label for="numero_telephone">Téléphone:</label>
+            <input type="tel" id="numero_telephone" name="numero_telephone" value="{{ request.form.get('numero_telephone') or numero_telephone or '' }}">
+        </div>
+        <div>
+            <label for="adresse">Adresse:</label>
+            <input type="text" id="adresse" name="adresse" value="{{ request.form.get('adresse') or adresse or '' }}">
+        </div>
+        <div>
+            <label for="id_client_initial">Client Initial Associé (Obligatoire):</label>
+            <select id="id_client_initial" name="id_client_initial" required>
+                <option value="">-- Sélectionnez un client initial --</option> {# Ajout d'une option par défaut plus claire #}
+                {% if clients_initial %}
+                    {% for client_initial_option in clients_initial %}
+                        <option value="{{ client_initial_option.id_client_initial }}"
+                                {% if (request.form.get('id_client_initial') and request.form.get('id_client_initial')|int == client_initial_option.id_client_initial) or (id_client_initial and id_client_initial|int == client_initial_option.id_client_initial) %}selected{% endif %}>
+                            {{ client_initial_option.nom }} {{ client_initial_option.prenom if client_initial_option.prenom else '' }}
+                        </option>
+                    {% endfor %}
+                {% else %}
+                    {# Ce cas ne devrait pas être affiché si le bouton est désactivé, mais c'est une sécurité #}
+                    <option value="" disabled>Aucun client initial disponible</option>
+                {% endif %}
+            </select>
+            {% if not clients_initial %}
+                <p style="color: red;">Veuillez d'abord <a href="{{ url_for('main.add_client_initial') }}">ajouter un Client Initial</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <button type="submit" {% if not clients_initial %}disabled{% endif %}>Ajouter Client Final</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_clients_final') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à la liste</a></p>
+{% endblock %}

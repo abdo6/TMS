@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Ajouter Service Client - TMS{% endblock %}
+
+{% block content %}
+    <h1>Ajouter un Nouveau Service Client</h1>
+
+    {% if form_error %}
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.add_service_client') }}">
+        <div>
+            <label for="nom_service">Nom du Service (Obligatoire):</label>
+            <input type="text" id="nom_service" name="nom_service" value="{{ request.form.get('nom_service') or nom_service or '' }}" required>
+        </div>
+        <div>
+            <label for="id_client_initial">Client Initial Associé (Obligatoire):</label>
+            <select id="id_client_initial" name="id_client_initial" required>
+                <option value="">-- Sélectionnez un client initial --</option>
+                {% if clients_initial %}
+                    {% for client in clients_initial %}
+                        <option value="{{ client.id_client_initial }}" 
+                                {% if (request.form.get('id_client_initial') and request.form.get('id_client_initial')|int == client.id_client_initial) or (id_client_initial and id_client_initial|int == client.id_client_initial) %}selected{% endif %}>
+                            {{ client.nom }} {{ client.prenom if client.prenom else '' }}
+                        </option>
+                    {% endfor %}
+                {% else %}
+                    <option value="" disabled>Aucun client initial disponible</option>
+                {% endif %}
+            </select>
+            {% if not clients_initial %}
+                <p style="color: red;">Veuillez d'abord <a href="{{ url_for('main.add_client_initial') }}">ajouter un Client Initial</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <button type="submit" {% if not clients_initial %}disabled{% endif %}>Ajouter Service Client</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_service_clients') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à la liste</a></p>
+{% endblock %}

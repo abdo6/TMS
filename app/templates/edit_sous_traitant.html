@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier Sous-traitant {{ sous_traitant.nom_entreprise }} - TMS{% endblock %}
+
+{% block content %}
+    <h1>Modifier le Sous-traitant: {{ sous_traitant.nom_entreprise }}</h1>
+
+    {% if form_error %}
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.edit_sous_traitant', st_id=sous_traitant.id_sous_traitant) }}">
+        <div>
+            <label for="nom_entreprise">Nom de l'Entreprise (Obligatoire):</label>
+            <input type="text" id="nom_entreprise" name="nom_entreprise" value="{{ sous_traitant.nom_entreprise }}" required>
+        </div>
+        <div>
+            <label for="contact_personne">Personne Contact:</label>
+            <input type="text" id="contact_personne" name="contact_personne" value="{{ sous_traitant.contact_personne or '' }}">
+        </div>
+        <div>
+            <label for="numero_telephone">Téléphone:</label>
+            <input type="tel" id="numero_telephone" name="numero_telephone" value="{{ sous_traitant.numero_telephone or '' }}">
+        </div>
+        <div>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="{{ sous_traitant.email or '' }}">
+        </div>
+        <div>
+            <label for="adresse">Adresse:</label>
+            <input type="text" id="adresse" name="adresse" value="{{ sous_traitant.adresse or '' }}">
+        </div>
+        <div>
+            <button type="submit">Enregistrer les modifications</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_sous_traitants') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à la liste</a></p>
+{% endblock %}

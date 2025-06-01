@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Détails Commande {{ entete.reference }} - TMS{% endblock %}
+
+{% block content %}
+    <h1>Détails de la Commande: {{ entete.reference }}</h1>
+    <p>
+        <strong>Client:</strong> {{ entete.client_initial.nom if entete.client_initial else 'N/A' }} | 
+        <strong>Service:</strong> {{ entete.service_client.nom_service if entete.service_client else 'N/A' }} | 
+        <strong>Date:</strong> {{ entete.date_commande.strftime('%d/%m/%Y') }}
+    </p>
+
+    {% if details %}
+        <h3>Lignes de la commande :</h3>
+        <div style="overflow-x:auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID Détail</th>
+                    <th>Quantité</th>
+                    <th>Description Colis</th>
+                    <th>Volume (m³)</th>
+                    <th>Poids (kg)</th>
+                    <th>Type Véhicule Requis</th>
+                    <th>Client Final (Livraison)</th>
+                    <th>Destination (Livraison)</th>
+                    {# Statut de la livraison (via mission) pourrait être ajouté ici plus tard #}
+                </tr>
+            </thead>
+            <tbody>
+            {% for detail in details %}
+                <tr>
+                    <td>{{ detail.id_detail_commande }}</td>
+                    <td>{{ detail.quantite }}</td>
+                    <td>{{ detail.description_colis if detail.description_colis else 'N/A' }}</td>
+                    <td>{{ detail.volume if detail.volume is not none else 'N/A' }}</td>
+                    <td>{{ detail.poids if detail.poids is not none else 'N/A' }}</td>
+                    <td>{{ detail.type_vehicule.nom_type if detail.type_vehicule else 'N/A' }}</td>
+                    <td>{{ detail.client_final.nom if detail.client_final else 'N/A' }}</td>
+                    <td>{{ detail.destination.description if detail.destination else 'N/A' }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    {% else %}
+        <p>Aucun détail pour cette commande.</p>
+    {% endif %}
+
+    <p style="margin-top: 20px;"><a href="{{ url_for('main.client_commandes_list') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à Mes Commandes</a></p>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier Chauffeur {{ chauffeur.nom }} - TMS{% endblock %}
+
+{% block content %}
+    <h1>Modifier le Chauffeur: {{ chauffeur.nom }} {{ chauffeur.prenom }}</h1>
+
+    {# Les messages flash sont déjà gérés dans base.html. Nous n'avons plus besoin de ce bloc {% if form_error %}. #}
+
+    <form method="POST" action="{{ url_for('main.edit_chauffeur', chauffeur_id=chauffeur.id_chauffeur) }}">
+        <div>
+            <label for="nom">Nom (Obligatoire):</label>
+            {# Priorise la valeur soumise par le formulaire en cas d'erreur, sinon la valeur de l'objet chauffeur #}
+            <input type="text" id="nom" name="nom" value="{{ request.form.get('nom') or chauffeur.nom }}" required>
+        </div>
+        <div>
+            <label for="prenom">Prénom (Obligatoire):</label>
+            {# Priorise la valeur soumise par le formulaire en cas d'erreur, sinon la valeur de l'objet chauffeur #}
+            <input type="text" id="prenom" name="prenom" value="{{ request.form.get('prenom') or chauffeur.prenom }}" required>
+        </div>
+        <div>
+            <label for="email">Email (Obligatoire):</label>
+            {# Priorise la valeur soumise par le formulaire en cas d'erreur, sinon la valeur de l'objet chauffeur #}
+            <input type="email" id="email" name="email" value="{{ request.form.get('email') or chauffeur.email }}" required>
+        </div>
+        <div>
+            <label for="numero_telephone">Téléphone:</label>
+            {# Priorise la valeur soumise par le formulaire en cas d'erreur, sinon la valeur de l'objet chauffeur #}
+            <input type="tel" id="numero_telephone" name="numero_telephone" value="{{ request.form.get('numero_telephone') or chauffeur.numero_telephone or '' }}">
+        </div>
+        <div>
+            <label for="adresse">Adresse:</label>
+            {# Priorise la valeur soumise par le formulaire en cas d'erreur, sinon la valeur de l'objet chauffeur #}
+            <input type="text" id="adresse" name="adresse" value="{{ request.form.get('adresse') or chauffeur.adresse or '' }}">
+        </div>
+        <div>
+            <label for="categorie_ch">Catégorie Permis:</label>
+            {# Priorise la valeur soumise par le formulaire en cas d'erreur, sinon la valeur de l'objet chauffeur #}
+            <input type="text" id="categorie_ch" name="categorie_ch" value="{{ request.form.get('categorie_ch') or chauffeur.categorie_ch or '' }}">
+        </div>
+        <div>
+            <button type="submit">Enregistrer les modifications</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_chauffeurs') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à la liste</a></p>
+{% endblock %}

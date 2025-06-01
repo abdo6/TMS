@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des Villes - TMS{% endblock %}
+
+{% block content %}
+    <h1>Liste des Villes</h1>
+
+    <p><a href="{{ url_for('main.add_ville') }}" class="action-link">Ajouter une nouvelle Ville</a></p>
+
+    {% if villes %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Code Ville</th>
+                    <th>Nom Ville</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for ville in villes %}
+                <tr>
+                    <td>{{ ville.id_ville }}</td>
+                    <td>{{ ville.code_ville }}</td>
+                    <td>{{ ville.nom_ville }}</td>
+                    <td>
+                        <a href="{{ url_for('main.edit_ville', ville_id=ville.id_ville) }}" class="action-link" style="background-color: #ffc107; border-color: #ffc107; color: #212529;">Modifier</a>
+                        <a href="{{ url_for('main.delete_ville', ville_id=ville.id_ville) }}" 
+                           class="action-link delete-link" 
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette ville ?');">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucune ville enregistrée pour le moment.</p>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Ajouter Indisponibilité Chauffeur - TMS{% endblock %}
+
+{% block content %}
+    <h1>Ajouter une Nouvelle Indisponibilité Chauffeur</h1>
+
+    {% if form_error %}
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.add_indispo_chauffeur') }}">
+        <div>
+            <label for="id_chauffeur">Chauffeur (Obligatoire):</label>
+            <select id="id_chauffeur" name="id_chauffeur" required>
+                <option value="">-- Sélectionnez un chauffeur --</option>
+                {% if chauffeurs %}
+                    {% for chauffeur in chauffeurs %}
+                        <option value="{{ chauffeur.id_chauffeur }}" 
+                                {% if request.form.get('id_chauffeur') and request.form.get('id_chauffeur')|int == chauffeur.id_chauffeur %}selected{% endif %}>
+                            {{ chauffeur.nom }} {{ chauffeur.prenom }}
+                        </option>
+                    {% endfor %}
+                {% else %}
+                    <option value="" disabled>Aucun chauffeur disponible</option>
+                {% endif %}
+            </select>
+            {% if not chauffeurs %}
+                <p style="color: red;">Veuillez d'abord <a href="{{ url_for('main.add_chauffeur') }}">ajouter un Chauffeur</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <label for="id_type_indispo_chauffeur">Type d'Indisponibilité (Obligatoire):</label>
+            <select id="id_type_indispo_chauffeur" name="id_type_indispo_chauffeur" required>
+                 <option value="">-- Sélectionnez un type --</option>
+                {% if types_indispo %}
+                    {% for type_indispo in types_indispo %}
+                        <option value="{{ type_indispo.id_type_indispo_chauffeur }}" 
+                                {% if request.form.get('id_type_indispo_chauffeur') and request.form.get('id_type_indispo_chauffeur')|int == type_indispo.id_type_indispo_chauffeur %}selected{% endif %}>
+                            {{ type_indispo.nom_type }}
+                        </option>
+                    {% endfor %}
+                {% else %}
+                    <option value="" disabled>Aucun type d'indisponibilité disponible</option>
+                {% endif %}
+            </select>
+            {% if not types_indispo %}
+                <p style="color: red;">Veuillez d'abord <a href="{{ url_for('main.add_type_indispo_chauffeur') }}">ajouter un Type d'Indisponibilité Chauffeur</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <label for="date_debut">Date de Début (Obligatoire):</label>
+            <input type="date" id="date_debut" name="date_debut" value="{{ request.form.get('date_debut') or '' }}" required>
+        </div>
+        <div>
+            <label for="date_fin">Date de Fin (Obligatoire):</label>
+            <input type="date" id="date_fin" name="date_fin" value="{{ request.form.get('date_fin') or '' }}" required>
+        </div>
+        <div>
+            <label for="description">Description (Optionnel):</label>
+            <input type="text" id="description" name="description" value="{{ request.form.get('description') or '' }}">
+        </div>
+        <div>
+            <button type="submit" {% if not chauffeurs or not types_indispo %}disabled{% endif %}>Ajouter Indisponibilité</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_indispo_chauffeur') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à la liste</a></p>
+{% endblock %}

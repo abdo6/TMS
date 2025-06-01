@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Ajouter Feuille de Route - TMS{% endblock %}
+
+{% block content %}
+    <h1>Ajouter une Nouvelle Feuille de Route</h1>
+
+    {% if form_error %}
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.add_feuille_de_route') }}">
+        <div>
+            <label for="description">Description (Optionnel):</label>
+            <input type="text" id="description" name="description" value="{{ request.form.get('description') or description or '' }}">
+        </div>
+        <div>
+            <label for="id_chauffeur">Chauffeur (Obligatoire):</label>
+            <select id="id_chauffeur" name="id_chauffeur" required>
+                <option value="">-- Sélectionnez un chauffeur --</option>
+                {% if chauffeurs %}
+                    {% for chauffeur in chauffeurs %}
+                        <option value="{{ chauffeur.id_chauffeur }}" 
+                                {% if (request.form.get('id_chauffeur') and request.form.get('id_chauffeur')|int == chauffeur.id_chauffeur) or (id_chauffeur and id_chauffeur|int == chauffeur.id_chauffeur) %}selected{% endif %}>
+                            {{ chauffeur.nom }} {{ chauffeur.prenom }}
+                        </option>
+                    {% endfor %}
+                {% else %}
+                    <option value="" disabled>Aucun chauffeur disponible</option>
+                {% endif %}
+            </select>
+            {% if not chauffeurs %}
+                <p style="color: red;">Veuillez d'abord <a href="{{ url_for('main.add_chauffeur') }}">ajouter un Chauffeur</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <label for="id_vehicule">Véhicule (Obligatoire):</label>
+            <select id="id_vehicule" name="id_vehicule" required>
+                <option value="">-- Sélectionnez un véhicule --</option>
+                {% if vehicules %}
+                    {% for vehicule in vehicules %}
+                        <option value="{{ vehicule.id_vehicule }}" 
+                                {% if (request.form.get('id_vehicule') and request.form.get('id_vehicule')|int == vehicule.id_vehicule) or (id_vehicule and id_vehicule|int == vehicule.id_vehicule) %}selected{% endif %}>
+                            {{ vehicule.immatriculation_ve }} ({{ vehicule.categorie }})
+                        </option>
+                    {% endfor %}
+                {% else %}
+                    <option value="" disabled>Aucun véhicule disponible</option>
+                {% endif %}
+            </select>
+            {% if not vehicules %}
+                <p style="color: red;">Veuillez d'abord <a href="{{ url_for('main.add_vehicule') }}">ajouter un Véhicule</a>.</p>
+            {% endif %}
+        </div>
+
+        <h3>Dates et Heures Prévues</h3>
+        <div>
+            <label for="date_depart_prevu">Date Départ Prévu (Obligatoire):</label>
+            <input type="date" id="date_depart_prevu" name="date_depart_prevu" value="{{ request.form.get('date_depart_prevu') or date_depart_prevu or '' }}" required>
+        </div>
+        <div>
+            <label for="heure_depart_prevu">Heure Départ Prévue (Obligatoire):</label>
+            <input type="time" id="heure_depart_prevu" name="heure_depart_prevu" value="{{ request.form.get('heure_depart_prevu') or heure_depart_prevu or '' }}" required>
+        </div>
+        <div>
+            <label for="date_arrivee_prevue">Date Arrivée Prévue (Obligatoire):</label>
+            <input type="date" id="date_arrivee_prevue" name="date_arrivee_prevue" value="{{ request.form.get('date_arrivee_prevue') or date_arrivee_prevue or '' }}" required>
+        </div>
+        <div>
+            <label for="heure_arrivee_prevue">Heure Arrivée Prévue (Obligatoire):</label>
+            <input type="time" id="heure_arrivee_prevue" name="heure_arrivee_prevue" value="{{ request.form.get('heure_arrivee_prevue') or heure_arrivee_prevue or '' }}" required>
+        </div>
+
+        <h3>Données Réelles (Optionnelles)</h3>
+        <div>
+            <label for="date_depart_reel">Date Départ Réel:</label>
+            <input type="date" id="date_depart_reel" name="date_depart_reel" value="{{ request.form.get('date_depart_reel') or date_depart_reel or '' }}">
+        </div>
+        <div>
+            <label for="heure_depart_reel">Heure Départ Réelle:</label>
+            <input type="time" id="heure_depart_reel" name="heure_depart_reel" value="{{ request.form.get('heure_depart_reel') or heure_depart_reel or '' }}">
+        </div>
+        <div>
+            <label for="date_arrivee_reelle">Date Arrivée Réelle:</label>
+            <input type="date" id="date_arrivee_reelle" name="date_arrivee_reelle" value="{{ request.form.get('date_arrivee_reelle') or date_arrivee_reelle or '' }}">
+        </div>
+        <div>
+            <label for="heure_arrivee_reelle">Heure Arrivée Réelle:</label>
+            <input type="time" id="heure_arrivee_reelle" name="heure_arrivee_reelle" value="{{ request.form.get('heure_arrivee_reelle') or heure_arrivee_reelle or '' }}">
+        </div>
+        <div>
+            <label for="km_debut">Kilométrage Début:</label>
+            <input type="number" step="0.01" id="km_debut" name="km_debut" value="{{ request.form.get('km_debut') or km_debut or '' }}">
+        </div>
+        <div>
+            <label for="km_fin">Kilométrage Fin:</label>
+            <input type="number" step="0.01" id="km_fin" name="km_fin" value="{{ request.form.get('km_fin') or km_fin or '' }}">
+        </div>
+
+        <div>
+            <button type="submit" {% if not chauffeurs or not vehicules %}disabled{% endif %}>Ajouter Feuille de Route</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_feuilles_de_route') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à la liste</a></p>
+{% endblock %}

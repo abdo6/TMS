@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Ajouter Province - TMS{% endblock %}
+
+{% block content %}
+    <h1>Ajouter une Nouvelle Province</h1>
+
+    {% if form_error %} {# Assurez-vous que vos routes passent 'form_error' si nécessaire #}
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.add_province') }}">
+        <div>
+            <label for="nom_province">Nom Province (Obligatoire):</label>
+            <input type="text" id="nom_province" name="nom_province" value="{{ request.form.get('nom_province') or '' }}" required>
+        </div>
+        <div>
+            <label for="id_ville">Ville associée (Obligatoire):</label>
+            <select id="id_ville" name="id_ville" required>
+                <option value="">-- Sélectionnez une ville --</option>
+                {% if villes %}
+                    {% for ville in villes %}
+                        <option value="{{ ville.id_ville }}" {% if request.form.get('id_ville') and request.form.get('id_ville')|int == ville.id_ville %}selected{% endif %}>
+                            {{ ville.nom_ville }}
+                        </option>
+                    {% endfor %}
+                {% else %}
+                    <option value="" disabled>Aucune ville disponible</option>
+                {% endif %}
+            </select>
+            {% if not villes %}
+                <p style="color: red;">Veuillez d'abord <a href="{{ url_for('main.add_ville') }}">ajouter une Ville</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <button type="submit" {% if not villes %}disabled{% endif %}>Ajouter Province</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_provinces') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à la liste</a></p>
+{% endblock %}

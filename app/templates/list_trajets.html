@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des Trajets - TMS{% endblock %}
+
+{% block content %}
+    <h1>Liste des Trajets</h1>
+
+    <p><a href="{{ url_for('main.add_trajet') }}" class="action-link">Ajouter un nouveau Trajet</a></p>
+
+    {% if trajets %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Description</th>
+                    <th>Distance (km)</th>
+                    <th>Durée (heures)</th>
+                    <th>Destination Finale</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for trajet in trajets %}
+                <tr>
+                    <td>{{ trajet.id_trajet }}</td>
+                    <td>{{ trajet.description if trajet.description else 'N/A' }}</td>
+                    <td>{{ trajet.distance_km if trajet.distance_km is not none else 'N/A' }}</td>
+                    <td>{{ trajet.duree_heures if trajet.duree_heures is not none else 'N/A' }}</td>
+                    <td>{{ trajet.destination.description if trajet.destination else 'N/A' }}</td>
+                    <td>
+                        <a href="{{ url_for('main.edit_trajet', trajet_id=trajet.id_trajet) }}" class="action-link" style="background-color: #ffc107; border-color: #ffc107; color: #212529;">Modifier</a>
+                        <a href="{{ url_for('main.delete_trajet', trajet_id=trajet.id_trajet) }}" 
+                           class="action-link delete-link" 
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce trajet ?');">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucun trajet enregistré pour le moment.</p>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,217 @@
+{# app/templates/chauffeur_history_map.html #}
+{% extends "base.html" %}
+
+{% block title %}Historique Trajet Chauffeur - TMS{% endblock %}
+
+{% block head_extra %}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <style>
+        #map_history {
+            height: 500px;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .search-form {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            display: flex;
+            flex-wrap: wrap; 
+            align-items: flex-end; 
+            gap: 15px; 
+        }
+        .search-group {
+            display: flex;
+            flex-direction: column; 
+            gap: 5px;
+            flex: 1 1 200px; 
+        }
+        .search-form label {
+            font-size: 0.9em;
+            font-weight: 500;
+            color: #495057;
+        }
+        .search-form select,
+        .search-form input[type="date"] {
+            padding: 8px 10px;
+            font-size: 0.9em;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+        .search-form button {
+            padding: 8px 15px;
+            align-self: flex-end;
+        }
+        #map-info {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e0f2f7;
+            border: 1px solid #90caf9;
+            border-radius: 5px;
+            font-size: 0.9em;
+            color: #0056b3;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h1>Historique des Localisations d'un Chauffeur</h1>
+
+    <form id="history-form" class="search-form">
+        <div class="search-group">
+            <label for="chauffeur_select">Chauffeur:</label>
+            <select id="chauffeur_select" name="chauffeur_id" required>
+                <option value="">-- Sélectionnez un chauffeur --</option>
+                {% for chauffeur in chauffeurs %}
+                    <option value="{{ chauffeur.id_chauffeur }}">{{ chauffeur.nom_complet }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="search-group">
+            <label for="start_date">Date de Début:</label>
+            <input type="date" id="start_date" name="start_date" required>
+        </div>
+        <div class="search-group">
+            <label for="end_date">Date de Fin:</label>
+            <input type="date" id="end_date" name="end_date" required>
+        </div>
+        <button type="submit" class="action-link">Afficher Trajet</button>
+    </form>
+
+    <div id="map-info">
+        Veuillez sélectionner un chauffeur et une période pour afficher son trajet.
+    </div>
+
+    <div id="map_history"></div>
+
+{% endblock %}
+
+{% block scripts_extra %}
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        var map_history = L.map('map_history').setView([31.7917, -7.0926], 6); // Centré sur le Maroc
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map_history);
+
+        var currentPathLayer = null; // Pour stocker le tracé actuel
+        var startMarker = null; // Marqueur de début
+        var endMarker = null;   // Marqueur de fin
+
+        // Icônes personnalisées
+        var startIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png', // Vert pour le début
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+        });
+        var endIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png', // Rouge pour la fin
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+        });
+        var waypointIcon = L.icon({ // Pour les points intermédiaires (optionnel)
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-grey.png', // Gris pour les intermédiaires
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+            iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+        });
+
+
+        document.getElementById('history-form').addEventListener('submit', function(e) {
+            e.preventDefault(); // Empêche le rechargement de la page
+
+            const chauffeurId = document.getElementById('chauffeur_select').value;
+            const startDate = document.getElementById('start_date').value;
+            const endDate = document.getElementById('end_date').value;
+            const mapInfo = document.getElementById('map-info');
+
+            if (!chauffeurId || !startDate || !endDate) {
+                mapInfo.textContent = 'Veuillez remplir tous les champs du formulaire.';
+                mapInfo.style.backgroundColor = '#ffebee'; // Rouge clair pour erreur
+                mapInfo.style.color = '#f44336';
+                return;
+            }
+
+            // Supprimer le tracé et les marqueurs précédents
+            if (currentPathLayer) {
+                map_history.removeLayer(currentPathLayer);
+            }
+            if (startMarker) {
+                map_history.removeLayer(startMarker);
+            }
+            if (endMarker) {
+                map_history.removeLayer(endMarker);
+            }
+            // Supprimer tous les marqueurs de points intermédiaires (si ajoutés)
+            map_history.eachLayer(function(layer){
+                if(layer instanceof L.Marker && layer !== startMarker && layer !== endMarker) {
+                    map_history.removeLayer(layer);
+                }
+            });
+
+            mapInfo.textContent = 'Chargement du trajet...';
+            mapInfo.style.backgroundColor = '#e0f2f7';
+            mapInfo.style.color = '#0056b3';
+
+            fetch(`/api/locations/history/${chauffeurId}?start_date=${startDate}&end_date=${endDate}`)
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err.error || 'Erreur lors de la récupération des données.'); });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.length === 0) {
+                        mapInfo.textContent = 'Aucune donnée de localisation trouvée pour cette période.';
+                        mapInfo.style.backgroundColor = '#fff3cd'; // Jaune clair
+                        mapInfo.style.color = '#664d03';
+                        return;
+                    }
+
+                    // Préparer les coordonnées pour le tracé
+                    const latlngs = data.map(loc => [parseFloat(loc.latitude), parseFloat(loc.longitude)]);
+
+                    // Dessiner le tracé
+                    currentPathLayer = L.polyline(latlngs, {color: '#007bff', weight: 5, opacity: 0.7}).addTo(map_history);
+                    
+                    // Ajouter les marqueurs de début et de fin
+                    const firstPoint = latlngs[0];
+                    const lastPoint = latlngs[latlngs.length - 1];
+
+                    startMarker = L.marker(firstPoint, {icon: startIcon})
+                        .bindPopup("<b>Début du trajet</b><br>" + new Date(data[0].timestamp).toLocaleString('fr-FR'))
+                        .addTo(map_history);
+
+                    endMarker = L.marker(lastPoint, {icon: endIcon})
+                        .bindPopup("<b>Fin du trajet</b><br>" + new Date(data[data.length - 1].timestamp).toLocaleString('fr-FR'))
+                        .addTo(map_history);
+                    
+                    // Optionnel: ajouter des marqueurs pour les points intermédiaires
+                    // if (latlngs.length > 2) {
+                    //     for (let i = 1; i < latlngs.length - 1; i++) {
+                    //         L.marker(latlngs[i], {icon: waypointIcon})
+                    //             .bindPopup("Point intermédiaire<br>" + new Date(data[i].timestamp).toLocaleString('fr-FR'))
+                    //             .addTo(map_history);
+                    //     }
+                    // }
+
+                    // Ajuster la vue de la carte pour afficher tout le tracé
+                    map_history.fitBounds(currentPathLayer.getBounds(), {padding: [50, 50]});
+
+                    mapInfo.textContent = `Trajet affiché : ${data.length} points de localisation.`;
+                    mapInfo.style.backgroundColor = '#e8f5e9'; // Vert clair
+                    mapInfo.style.color = '#4caf50';
+                })
+                .catch(error => {
+                    mapInfo.textContent = `Erreur: ${error.message}`;
+                    mapInfo.style.backgroundColor = '#ffebee';
+                    mapInfo.style.color = '#f44336';
+                    console.error('Erreur lors de l\'affichage du trajet:', error);
+                });
+        });
+    </script>
+{% endblock %}

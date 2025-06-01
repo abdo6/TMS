@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier Date Contrôle Véhicule - TMS{% endblock %}
+
+{% block content %}
+    <h1>Modifier Date de Contrôle Véhicule pour: {{ date_tr.vehicule.immatriculation_ve }}</h1>
+
+    {% if form_error %}
+        <ul class="flash-messages" style="list-style: none; padding-left: 0;">
+            <li class="flash-message danger">{{ form_error }}</li>
+        </ul>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('main.edit_date_tr', date_id=date_tr.id_date_tr) }}">
+        <div>
+            <label for="id_vehicule">Véhicule (Obligatoire):</label>
+            <select id="id_vehicule" name="id_vehicule" required>
+                <option value="">-- Sélectionnez un véhicule --</option>
+                {% for vehicule in vehicules %}
+                    <option value="{{ vehicule.id_vehicule }}" 
+                            {% if vehicule.id_vehicule == date_tr.id_vehicule %}selected{% endif %}>
+                        {{ vehicule.immatriculation_ve }} ({{ vehicule.categorie }})
+                    </option>
+                {% endfor %}
+            </select>
+            {% if not vehicules %}
+                 <p style="color: red;">Aucun véhicule disponible. Veuillez en <a href="{{ url_for('main.add_vehicule') }}">ajouter un</a>.</p>
+            {% endif %}
+        </div>
+        <div>
+            <label for="description">Description (Ex: Contrôle Technique, Assurance):</label>
+            <input type="text" id="description" name="description" value="{{ date_tr.description or '' }}">
+        </div>
+        <div>
+            <label for="date_debut">Date de Début de Validité (Obligatoire):</label>
+            <input type="date" id="date_debut" name="date_debut" value="{{ date_tr.date_debut.strftime('%Y-%m-%d') }}" required>
+        </div>
+        <div>
+            <label for="date_fin">Date de Fin de Validité (Obligatoire):</label>
+            <input type="date" id="date_fin" name="date_fin" value="{{ date_tr.date_fin.strftime('%Y-%m-%d') }}" required>
+        </div>
+        <div>
+            <button type="submit">Enregistrer les modifications</button>
+        </div>
+    </form>
+
+    <p><a href="{{ url_for('main.liste_dates_tr') }}" class="action-link" style="background-color: #6c757d; border-color: #6c757d;">Retour à la liste</a></p>
+{% endblock %}

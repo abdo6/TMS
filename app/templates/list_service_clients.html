@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des Services Clients - TMS{% endblock %}
+
+{% block content %}
+    <h1>Liste des Services Clients</h1>
+
+    <p><a href="{{ url_for('main.add_service_client') }}" class="action-link">Ajouter un nouveau Service Client</a></p>
+
+    {% if service_clients %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom du Service</th>
+                    <th>Client Initial Associé</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for service in service_clients %}
+                <tr>
+                    <td>{{ service.id_service }}</td>
+                    <td>{{ service.nom_service }}</td>
+                    <td>{{ service.client_initial.nom if service.client_initial else 'N/A' }}</td>
+                    <td>
+                        <a href="{{ url_for('main.edit_service_client', service_id=service.id_service) }}" class="action-link" style="background-color: #ffc107; border-color: #ffc107; color: #212529;">Modifier</a>
+                        <a href="{{ url_for('main.delete_service_client', service_id=service.id_service) }}" 
+                           class="action-link delete-link" 
+                           onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce service client ?');">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucun service client enregistré pour le moment.</p>
+    {% endif %}
+{% endblock %}
